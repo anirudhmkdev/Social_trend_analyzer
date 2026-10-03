@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import List
 
 from fastapi import FastAPI, Request
@@ -8,6 +9,15 @@ from app.api.router import api_router
 from app.config import settings
 from app.core.exceptions import AppException
 from app.core.logging import logger
+from app.database.engine import SessionLocal
+from app.services.analysis_service import recover_interrupted_runs
+
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    with SessionLocal() as db:
+        recover_interrupted_runs(db)
+    yield
 
 
 def create_app() -> FastAPI:
@@ -15,6 +25,7 @@ def create_app() -> FastAPI:
         title="Social Trend Analyzer API",
         version="0.1.0",
         description="NLP-based platform for detecting emerging topics, sentiment, and trends.",
+        lifespan=lifespan,
     )
 
     cors_origins: List[str] = (

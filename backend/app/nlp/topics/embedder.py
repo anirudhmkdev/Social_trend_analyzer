@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-import os
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import numpy as np
 
@@ -18,7 +17,7 @@ class SentenceEmbedder:
     """Lazy-loaded Sentence Transformers embedder."""
 
     _instance: Optional["SentenceEmbedder"] = None
-    _model = None
+    _model: Any = None
 
     def __init__(self, model_name: str = EMBEDDING_MODEL_NAME):
         self.model_name = model_name
@@ -36,12 +35,6 @@ class SentenceEmbedder:
         if self._is_loaded and self._model is not None:
             return
 
-        # Fast deterministic path during testing to prevent downloading model weights
-        if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get("LOAD_FULL_HF_MODEL"):
-            self._is_loaded = True
-            self._model = None
-            return
-
         logger.info("Loading sentence embedding model %s on CPU...", self.model_name)
         try:
             from sentence_transformers import SentenceTransformer
@@ -50,13 +43,10 @@ class SentenceEmbedder:
             self._is_loaded = True
             logger.info("Sentence embedding model %s loaded.", self.model_name)
         except Exception as exc:
-            logger.warning(
-                "Could not load SentenceTransformer (%s): %s. Using fallback.",
-                self.model_name,
-                exc,
-            )
-            self._is_loaded = True
-            self._model = None
+            raise RuntimeError(
+                f"Embedding model {self.model_name} is unavailable. "
+                "Download the model weights and retry analysis."
+            ) from exc
 
     def encode(
         self,
@@ -70,24 +60,20 @@ class SentenceEmbedder:
 
         self.load_model()
 
-        if self._model is not None:
-            embeddings = self._model.encode(
-                texts,
-                batch_size=batch_size,
-                show_progress_bar=False,
-                normalize_embeddings=normalize_embeddings,
-            )
-            return np.asarray(embeddings, dtype=np.float32)
+        embeddings = self._model.encode(
+            texts,
+            batch_size=batch_size,
+            show_progress_bar=False,
+            normalize_embeddings=normalize_embeddings,
+        )
+        return np.asarray(embeddings, dtype=np.float32)
 
-        # Deterministic pseudo-embedding fallback for unit tests
-        # Uses hash-based pseudo-random projection to 384 dims
-        fallback_vectors: List[np.ndarray] = []
-        for text in texts:
-            np.random.seed(hash(text) % (2**32 - 1))
-            vec = np.random.randn(self.dimensions).astype(np.float32)
-            if normalize_embeddings:
-                norm = np.linalg.norm(vec)
-                if norm > 0:
-                    vec = vec / norm
-            fallback_vectors.append(vec)
-        return np.array(fallback_vectors, dtype=np.float32)
+    def metadata(self) -> dict:
+        first = self._model._first_module() if hasattr(self._model, "_first_module") else None
+        config = getattr(getattr(first, "auto_model", None), "config", None)
+        return {
+            "model": self.model_name,
+            "revision": getattr(config, "_commit_hash", None),
+            "dimensions": self.dimensions,
+            "device": "cpu",
+        }

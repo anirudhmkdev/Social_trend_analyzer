@@ -1,7 +1,7 @@
 """API routes for analysis runs and sentiment results."""
 
 import uuid
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.database.engine import get_db
 from app.schemas.analysis import (
     AnalysisRunCreate,
+    AnalysisRunListResponse,
     AnalysisRunResponse,
     SentimentSummaryResponse,
 )
@@ -47,14 +48,16 @@ def get_current_active_run(db: Session = Depends(get_db)) -> Optional[AnalysisRu
     return AnalysisRunResponse.model_validate(active)
 
 
-@router.get("", response_model=List[AnalysisRunResponse])
+@router.get("", response_model=AnalysisRunListResponse)
 def get_analysis_runs(
     dataset_id: Optional[uuid.UUID] = None,
     db: Session = Depends(get_db),
-) -> List[AnalysisRunResponse]:
+) -> AnalysisRunListResponse:
     """List analysis runs, optionally filtered by dataset."""
     runs = list_analysis_runs(db, dataset_id=dataset_id)
-    return [AnalysisRunResponse.model_validate(r) for r in runs]
+    return AnalysisRunListResponse(
+        runs=[AnalysisRunResponse.model_validate(r) for r in runs], total=len(runs)
+    )
 
 
 @router.get("/{run_id}/status", response_model=AnalysisRunResponse)
