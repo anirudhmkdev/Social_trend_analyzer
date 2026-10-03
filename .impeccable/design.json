@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-03T11:47:00Z",
+  "title": "Design System: Social Trend Analyzer",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary Ink",
+        "canonical": "#0f172a",
+        "tonalRamp": ["#020617", "#0f172a", "#1e293b", "#334155", "#475569"]
+      },
+      "accent": {
+        "role": "accent",
+        "displayName": "Steel Focus",
+        "canonical": "#0284c7",
+        "tonalRamp": ["#0369a1", "#0284c7", "#38bdf8", "#bae6fd", "#e0f2fe"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Canvas Base",
+        "canonical": "#f8fafc",
+        "tonalRamp": ["#f8fafc", "#f1f5f9", "#e2e8f0", "#cbd5e1", "#94a3b8"]
+      },
+      "sentiment-pos": {
+        "role": "semantic",
+        "displayName": "Positive Sentiment",
+        "canonical": "#059669",
+        "tonalRamp": ["#047857", "#059669", "#10b981", "#6ee7b7", "#ecfdf5"]
+      },
+      "sentiment-neu": {
+        "role": "semantic",
+        "displayName": "Neutral Sentiment",
+        "canonical": "#475569",
+        "tonalRamp": ["#334155", "#475569", "#64748b", "#cbd5e1", "#f1f5f9"]
+      },
+      "sentiment-neg": {
+        "role": "semantic",
+        "displayName": "Negative Sentiment",
+        "canonical": "#e11d48",
+        "tonalRamp": ["#be123c", "#e11d48", "#f43f5e", "#fda4af", "#fff1f2"]
+      },
+      "trend-emerging": {
+        "role": "semantic",
+        "displayName": "Emerging Trend",
+        "canonical": "#d97706",
+        "tonalRamp": ["#b45309", "#d97706", "#f59e0b", "#fcd34d", "#fffbeb"]
+      },
+      "trend-rising": {
+        "role": "semantic",
+        "displayName": "Rising Trend",
+        "canonical": "#0d9488",
+        "tonalRamp": ["#0f766e", "#0d9488", "#14b8a6", "#5eead4", "#f0fdfa"]
+      },
+      "trend-stable": {
+        "role": "semantic",
+        "displayName": "Stable Trend",
+        "canonical": "#475569",
+        "tonalRamp": ["#334155", "#475569", "#64748b", "#cbd5e1", "#f8fafc"]
+      },
+      "trend-declining": {
+        "role": "semantic",
+        "displayName": "Declining Trend",
+        "canonical": "#64748b",
+        "tonalRamp": ["#4b5563", "#64748b", "#9ca3af", "#d1d5db", "#f3f4f6"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Primary view and workbench headers; engineered geometric sans (Space Grotesk)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headers, major table groupings, and modal titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, table column groups, and topic names (IBM Plex Sans)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Post content previews, descriptions, and analytical explanations."
+      },
+      "label": {
+        "displayName": "Tabular Mono",
+        "purpose": "Quantitative scores, counts, timestamps, z-scores, and status indicators (JetBrains Mono)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-xs",
+        "value": "0 1px 2px 0 rgba(15, 23, 42, 0.04)",
+        "purpose": "Micro-elevation for active dropdowns and row hover states."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-fast",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Crisp 120ms transitions for button and hover states."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action button for executing analysis or committing actions.",
+      "html": "<button class=\"sta-btn-primary\">RUN ANALYSIS</button>",
+      "css": ".sta-btn-primary { background: #0f172a; color: #f8fafc; padding: 6px 14px; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.8125rem; font-weight: 500; border: 1px solid #0f172a; border-radius: 2px; transition: background 120ms ease; cursor: pointer; } .sta-btn-primary:hover { background: #334155; }"
+    },
+    {
+      "name": "Trend Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-trend",
+      "description": "Status badge displaying trend classification (Emerging, Rising, Stable, Declining).",
+      "html": "<span class=\"sta-badge-rising\">RISING (+2.4σ)</span>",
+      "css": ".sta-badge-rising { display: inline-flex; align-items: center; padding: 2px 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; font-weight: 500; color: #0d9488; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 2px; }"
+    },
+    {
+      "name": "KPI Metric Tile",
+      "kind": "card",
+      "refersTo": "kpi-tile",
+      "description": "High-density metric summary block showing computed values and statistical context.",
+      "html": "<div class=\"sta-kpi-tile\"><span class=\"sta-kpi-label\">AVG TREND SCORE</span><div class=\"sta-kpi-val\">0.742</div><span class=\"sta-kpi-sub\">+0.242 vs baseline</span></div>",
+      "css": ".sta-kpi-tile { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 4px; } .sta-kpi-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; font-weight: 500; color: #64748b; letter-spacing: 0.04em; text-transform: uppercase; } .sta-kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; font-weight: 600; color: #0f172a; line-height: 1.2; } .sta-kpi-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: #0d9488; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Precision Intelligence Ledger",
+    "overview": "Social Trend Analyzer is conceived as a serious, scientific computational instrument—the digital analog to a high-density financial terminal or an empirical laboratory observatory. It completely rejects the superficial tropes of modern consumer AI SaaS products (floating glass cards, neon gradient blurs, oversized marketing hero banners, and generic rounded containers). Instead, the system prioritizes uncompromising data legibility, mathematical explainability, and structured information hierarchy.",
+    "keyCharacteristics": [
+      "Architectural & Monochromatic with crisp 1px structural borders",
+      "Data-Led Color Semantics reserving saturation strictly for verified data states",
+      "Engineered Typographical Pairing (Space Grotesk + IBM Plex Sans + JetBrains Mono)",
+      "Compact workbench layouts with edge-to-edge dividers and zero nested cards",
+      "Verifiable computational integrity with zero fabricated metrics"
+    ],
+    "rules": [
+      {
+        "name": "The Monochrome Foundation Rule",
+        "body": "90% of any view must consist of canvas, surface, border, and grayscale typography. Colored pixels are solely semantic data carriers.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Numerical Rule",
+        "body": "All numeric scores, sample counts, coordinates, timestamps, and p-values must render with tabular figures and monospaced formatting.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Architecture Rule",
+        "body": "Surfaces are flat at rest with 1px solid structural borders. Drop shadows, glassmorphism, and neon halos are strictly banned.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do format all numerical data, scores, dates, and formulas in JetBrains Mono with tabular figures.",
+      "Do use 1px solid structural borders to establish clear visual boundaries between functional workbench modules.",
+      "Do provide explicit mathematical explanations alongside trend scores.",
+      "Do preserve high text contrast (minimum 4.5:1 ratio against backgrounds) across all views."
+    ],
+    "donts": [
+      "Don't use purple, blue, or violet AI gradients across backgrounds, hero cards, or borders.",
+      "Don't use glassmorphism, background blurs, or glossy specular highlights.",
+      "Don't use pill-shaped buttons, filter tags, or status badges.",
+      "Don't use card borders with radius greater than 6px, and never nest cards inside other cards.",
+      "Don't rely on generic Inter-everywhere typography.",
+      "Don't fabricate or mock analytical scores; all visuals must reflect real calculations."
+    ]
+  }
+}

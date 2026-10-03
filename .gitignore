@@ -3,6 +3,8 @@
 .env.local
 .env.*.local
 *.env
+!.env.example
+!.env.local.example
 
 # Python
 __pycache__/
@@ -33,6 +35,10 @@ share/python-wheels/
 .ruff_cache/
 venv/
 .venv/
+
+# Lockfiles should always be committed
+!requirements.lock
+!package-lock.json
 
 # Node / Frontend
 node_modules/
