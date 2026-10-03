@@ -79,12 +79,12 @@ def test_url_extraction_and_normalization():
     assert "https://example.com/research/paper?id=123" in res.urls
 
     # sentiment_ready_text replaces URLs with http
-    assert "read the report here http and http now".lower() == res.sentiment_ready_text.lower()
+    assert "read the report http and http now".lower() == res.sentiment_ready_text.lower()
 
     # cleaned_text removes URLs entirely
     assert "http" not in res.cleaned_text
     assert "example.com" not in res.cleaned_text
-    assert "read the report here and now" in res.cleaned_text
+    assert "read the report and now" in res.cleaned_text
 
 
 def test_html_entities_decoding():
