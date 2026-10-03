@@ -42,8 +42,9 @@ def _safe_int(val: Any) -> Optional[int]:
     if val is None or (isinstance(val, float) and pd.isna(val)):
         return None
     try:
-        return int(float(str(val)))
-    except (ValueError, TypeError):
+        value = float(str(val))
+        return int(value) if 0 <= value <= 2_147_483_647 and value.is_integer() else None
+    except (ValueError, TypeError, OverflowError):
         return None
 
 
@@ -66,8 +67,8 @@ def normalize_row(
     text_val = row.get("text", None)
     if text_val is None or (isinstance(text_val, float) and pd.isna(text_val)):
         return None
-    original_text = str(text_val).strip()
-    if not original_text:
+    original_text = str(text_val)
+    if not original_text.strip():
         return None
 
     # --- Required: timestamp ---

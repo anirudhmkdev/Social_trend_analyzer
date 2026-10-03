@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -56,6 +56,8 @@ class ValidationResult:
             },
             "platform_distribution": self.platform_distribution,
             "missing_field_counts": self.missing_optional_fields,
+            "row_issues": [asdict(issue) for issue in self.issues[:200]],
+            "issues_truncated": len(self.issues) > 200,
         }
 
 
@@ -151,6 +153,11 @@ def validate_dataset(
             if text_hash in seen_hashes:
                 duplicate_indices.add(idx)
                 result.duplicate_rows += 1
+                result.issues.append(
+                    ValidationIssue(
+                        int(str(idx)), "duplicate", "Repeated text; retained and flagged"
+                    )
+                )
             else:
                 seen_hashes.add(text_hash)
 

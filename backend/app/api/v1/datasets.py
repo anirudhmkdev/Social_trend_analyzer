@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database.engine import get_db
 from app.schemas.dataset import (
     ColumnMappingRequest,
@@ -40,7 +41,7 @@ async def upload_dataset(
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided.")
 
-    content = await file.read()
+    content = await file.read(settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024 + 1)
 
     dataset, parse_result = dataset_service.upload_csv(
         db=db,
@@ -120,7 +121,7 @@ def preview_dataset(
     n_rows: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ) -> DatasetPreviewResponse:
-    """Preview dataset rows (reads from database posts)."""
+    """Preview staged raw rows before import, or normalized posts after import."""
     preview = dataset_service.get_dataset_preview(db=db, dataset_id=dataset_id, n_rows=n_rows)
     return DatasetPreviewResponse(**preview)
 
@@ -155,9 +156,15 @@ def validate_dataset_endpoint(
     dataset_id: UUID,
     db: Session = Depends(get_db),
 ) -> ValidationResultSchema:
-    """Run validation on an imported dataset."""
+    """Validate the staged CSV under the confirmed mapping."""
     _, validation_dict = dataset_service.run_validation(db=db, dataset_id=dataset_id)
     return ValidationResultSchema(**validation_dict)
+
+
+@router.post("/{dataset_id}/import", response_model=DatasetResponse)
+def import_dataset(dataset_id: UUID, db: Session = Depends(get_db)) -> DatasetResponse:
+    """Persist valid normalized rows from the previously uploaded CSV."""
+    return DatasetResponse.model_validate(dataset_service.import_dataset(db, dataset_id))
 
 
 # ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import io
 import os
 from dataclasses import dataclass, field
@@ -192,14 +193,19 @@ def _try_read_csv(content: bytes) -> Tuple[pd.DataFrame, str]:
 
     Returns (DataFrame, encoding_used). Raises ValueError on failure.
     """
-    encodings = ["utf-8", "utf-8-sig", "latin-1", "cp1252", "iso-8859-1"]
+    if b"\x00" in content:
+        raise ValueError(
+            "Unsupported encoding or binary file. Save the CSV as UTF-8 or Windows-1252."
+        )
+    encodings = ["utf-8-sig", "cp1252"]
     last_error: Optional[Exception] = None
 
     for enc in encodings:
         try:
-            df = pd.read_csv(io.BytesIO(content), encoding=enc, low_memory=False)
+            # Keep source strings intact (large IDs, leading zeros and literal 'NA').
+            df = pd.read_csv(io.BytesIO(content), encoding=enc, dtype=str, keep_default_na=False)
             return df, enc
-        except (UnicodeDecodeError, pd.errors.ParserError) as exc:
+        except (UnicodeDecodeError, pd.errors.ParserError, pd.errors.EmptyDataError) as exc:
             last_error = exc
             continue
 
@@ -247,6 +253,10 @@ def parse_csv(
     except ValueError as exc:
         raise ValueError(str(exc)) from exc
 
+    headers = [value.strip() for value in next(csv.reader(io.StringIO(content.decode(encoding))))]
+    if not all(headers) or len(set(headers)) != len(headers):
+        raise ValueError("CSV column names must be non-empty and unique.")
+
     if df.empty:
         raise ValueError("The uploaded CSV file contains no data rows.")
 
@@ -264,6 +274,8 @@ def parse_csv(
 
     # --- Column name sanitization ---
     df.columns = [str(c).strip() for c in df.columns]
+    if len(set(df.columns)) != len(df.columns):
+        raise ValueError("CSV column names must be unique after trimming whitespace.")
 
     # --- Detect column mappings ---
     mapping = _detect_column_mapping(list(df.columns))
@@ -311,5 +323,5 @@ def get_csv_preview(df: pd.DataFrame, n_rows: int = 20) -> List[Dict[str, Any]]:
     """Return the first n_rows of a DataFrame as a list of row dicts."""
     preview_df = df.head(n_rows).copy()
     # Replace NaN with None for JSON serialization
-    preview_df = preview_df.where(pd.notnull(preview_df), None)
+    preview_df = preview_df.astype(object).where(pd.notnull(preview_df), None)
     return cast(List[Dict[str, Any]], preview_df.to_dict(orient="records"))

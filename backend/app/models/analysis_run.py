@@ -28,7 +28,6 @@ class AnalysisRun(Base):
         Uuid(as_uuid=True),
         ForeignKey("datasets.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
     status: Mapped[str] = mapped_column(
         String(50), nullable=False, default="pending"
@@ -53,7 +52,7 @@ class AnalysisRun(Base):
         nullable=True,
     )
 
-    dataset: Mapped["Dataset"] = relationship("Dataset")
+    dataset: Mapped["Dataset"] = relationship("Dataset", back_populates="analysis_runs")
     sentiment_results: Mapped[List["SentimentResult"]] = relationship(
         "SentimentResult", back_populates="analysis_run", cascade="all, delete-orphan"
     )

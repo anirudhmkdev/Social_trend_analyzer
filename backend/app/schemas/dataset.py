@@ -26,6 +26,8 @@ class ColumnMappingRequest(BaseModel):
     author_id: Optional[str] = None
     external_id: Optional[str] = None
 
+    model_config = ConfigDict(extra="forbid")
+
     def to_dict(self) -> Dict[str, Optional[str]]:
         return self.model_dump()
 
@@ -70,6 +72,8 @@ class ValidationResultSchema(BaseModel):
     date_range: DateRangeInfo
     platform_distribution: Dict[str, int]
     missing_field_counts: Dict[str, int]
+    row_issues: List[Dict[str, Any]] = []
+    issues_truncated: bool = False
 
 
 # ---------------------------------------------------------------------------
@@ -105,6 +109,7 @@ class DatasetResponse(BaseModel):
     valid_row_count: Optional[int] = None
     column_mapping: Optional[Dict[str, Any]] = None
     validation_results: Optional[Dict[str, Any]] = None
+    upload_metadata: Optional[Dict[str, Any]] = None
     preprocessing_version: str
     status: str
     created_at: datetime
@@ -122,6 +127,9 @@ class DatasetPreviewResponse(BaseModel):
     rows: List[Dict[str, Any]]
     total_rows: Optional[int] = None
     shown_rows: int
+    kind: str = "normalized"
+    detection: Optional[ColumnMappingResponse] = None
+    warnings: List[str] = []
 
 
 class SampleDatasetResponse(BaseModel):
