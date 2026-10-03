@@ -16,6 +16,7 @@ from app.models.analysis_run import AnalysisRun
 from app.models.dataset import Dataset
 from app.models.post import Post
 from app.models.sentiment_result import SentimentResult
+from app.models.topic import PostTopic, Topic
 from app.nlp.preprocessing.cleaner import PREPROCESSING_VERSION
 from app.nlp.preprocessing.pipeline import run_dataset_preprocessing
 from app.nlp.sentiment.classifier import (
@@ -24,6 +25,12 @@ from app.nlp.sentiment.classifier import (
     SentimentAnalyzer,
 )
 from app.nlp.sentiment.evaluator import evaluate_sentiment_predictions
+from app.nlp.topics.embedder import (
+    EMBEDDING_DIMENSIONS,
+    EMBEDDING_MODEL_NAME,
+    SentenceEmbedder,
+)
+from app.nlp.topics.modeler import TopicModeler
 
 logger = logging.getLogger(__name__)
 
@@ -201,10 +208,75 @@ def execute_analysis_run(
             "evaluation_metrics": eval_metrics,
         }
 
+        # Step 3: Embeddings & Topic Modeling
+        run.progress_pct = 50
+        run.current_step = "Sentence Embeddings & Topic Modeling"
+        db.commit()
+
+        cleaned_texts = [p.cleaned_text or p.original_text for p in posts]
+        embedder = SentenceEmbedder.get_instance()
+        embeddings = embedder.encode(cleaned_texts, batch_size=64)
+
+        topic_modeler = TopicModeler(random_state=42)
+        topic_labels, probs, discovered_topics = topic_modeler.fit_transform(
+            cleaned_texts, embeddings=embeddings
+        )
+
+        topic_id_map: Dict[int, uuid.UUID] = {}
+        topic_objects = []
+        for dt in discovered_topics:
+            topic_rec = Topic(
+                analysis_run_id=run.id,
+                topic_index=dt.topic_index,
+                display_name=dt.display_name,
+                keywords=dt.keywords,
+                representative_docs=dt.representative_docs,
+                post_count=len(dt.post_indices),
+                is_outlier=dt.is_outlier,
+                created_at=datetime.now(timezone.utc),
+            )
+            topic_objects.append(topic_rec)
+
+        db.add_all(topic_objects)
+        db.commit()
+
+        # Map topic_index to newly assigned Topic.id
+        for t in topic_objects:
+            topic_id_map[t.topic_index] = t.id
+
+        post_topic_objects = []
+        for i, post in enumerate(posts):
+            t_idx = topic_labels[i]
+            if t_idx in topic_id_map:
+                pt = PostTopic(
+                    post_id=post.id,
+                    topic_id=topic_id_map[t_idx],
+                    analysis_run_id=run.id,
+                    probability=probs[i] if i < len(probs) else 1.0,
+                )
+                post_topic_objects.append(pt)
+
+        db.add_all(post_topic_objects)
+        db.commit()
+
+        topics_stats = {
+            "total_topics": len([t for t in discovered_topics if not t.is_outlier]),
+            "outlier_count": len([i for i in topic_labels if i == -1]),
+            "discovered_count": len(discovered_topics),
+        }
+
+        run.model_info = {
+            **(run.model_info or {}),
+            "embedding_model": EMBEDDING_MODEL_NAME,
+            "embedding_dimensions": EMBEDDING_DIMENSIONS,
+            "topic_model": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+        }
+
         run.stats = {
             **(run.stats or {}),
             "preprocessing": preproc_summary,
             "sentiment": sentiment_stats,
+            "topics": topics_stats,
         }
         run.progress_pct = 100
         run.status = "completed"
