@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
@@ -14,9 +14,13 @@ from app.core.exceptions import ConflictException, EntityNotFoundException
 from app.database.engine import SessionLocal
 from app.models.analysis_run import AnalysisRun
 from app.models.dataset import Dataset
+from app.models.entity import Entity, PostEntity
+from app.models.keyword_snapshot import KeywordSnapshot
 from app.models.post import Post
 from app.models.sentiment_result import SentimentResult
 from app.models.topic import PostTopic, Topic
+from app.nlp.enrichment.keywords import KeywordExtractor
+from app.nlp.enrichment.ner import NER_MODEL_NAME, EntityRecognizer
 from app.nlp.preprocessing.cleaner import PREPROCESSING_VERSION
 from app.nlp.preprocessing.pipeline import run_dataset_preprocessing
 from app.nlp.sentiment.classifier import (
@@ -265,11 +269,110 @@ def execute_analysis_run(
             "discovered_count": len(discovered_topics),
         }
 
+        # Step 4: NLP Enrichment (NER, Keywords, Hashtags)
+        run.progress_pct = 70
+        run.current_step = "NLP Enrichment (NER, Keywords, Hashtags)"
+        db.commit()
+
+        # 4a. NER Extraction
+        raw_texts = [p.original_text for p in posts]
+        ner = EntityRecognizer.get_instance()
+        extracted_by_post = ner.extract_from_texts(raw_texts, batch_size=64)
+
+        # Aggregate unique entities: key = (normalized_text, label)
+        from collections import defaultdict
+        entity_freqs: Dict[Tuple[str, str], int] = defaultdict(int)
+        entity_display: Dict[Tuple[str, str], str] = {}
+        for doc_ents in extracted_by_post:
+            for ent in doc_ents:
+                key = (ent.normalized_text, ent.label)
+                entity_freqs[key] += 1
+                if key not in entity_display:
+                    entity_display[key] = ent.text
+
+        entity_id_map: Dict[Tuple[str, str], uuid.UUID] = {}
+        entity_objects = []
+        for (norm_text, label), freq in entity_freqs.items():
+            ent_rec = Entity(
+                analysis_run_id=run.id,
+                text=entity_display[(norm_text, label)],
+                normalized_text=norm_text,
+                label=label,
+                frequency=freq,
+            )
+            entity_objects.append(ent_rec)
+
+        db.add_all(entity_objects)
+        db.commit()
+
+        for ent_rec in entity_objects:
+            entity_id_map[(ent_rec.normalized_text, ent_rec.label)] = ent_rec.id
+
+        # Create PostEntity links
+        post_entity_objects = []
+        for post, doc_ents in zip(posts, extracted_by_post):
+            for ent in doc_ents:
+                key = (ent.normalized_text, ent.label)
+                if key in entity_id_map:
+                    pe = PostEntity(
+                        post_id=post.id,
+                        entity_id=entity_id_map[key],
+                        analysis_run_id=run.id,
+                        start_char=ent.start_char,
+                        end_char=ent.end_char,
+                    )
+                    post_entity_objects.append(pe)
+
+        db.add_all(post_entity_objects)
+        db.commit()
+
+        # 4b. Keywords & Hashtags
+        kw_extractor = KeywordExtractor(max_features=100)
+        top_keywords = kw_extractor.extract_keywords(cleaned_texts, top_n=50)
+        hashtag_items = kw_extractor.analyze_hashtags(
+            [p.hashtags or [] for p in posts],
+            period_split_index=len(posts) // 2 if len(posts) > 4 else None,
+        )
+
+        keyword_objects = []
+        for kw in top_keywords:
+            k_rec = KeywordSnapshot(
+                analysis_run_id=run.id,
+                keyword=kw.keyword,
+                keyword_type=kw.keyword_type,
+                frequency=kw.frequency,
+                tfidf_score=kw.tfidf_score,
+                growth_rate=kw.growth_rate,
+                created_at=datetime.now(timezone.utc),
+            )
+            keyword_objects.append(k_rec)
+
+        for ht in hashtag_items:
+            h_rec = KeywordSnapshot(
+                analysis_run_id=run.id,
+                keyword=ht.keyword,
+                keyword_type="hashtag",
+                frequency=ht.frequency,
+                growth_rate=ht.growth_rate,
+                created_at=datetime.now(timezone.utc),
+            )
+            keyword_objects.append(h_rec)
+
+        db.add_all(keyword_objects)
+        db.commit()
+
+        enrichment_stats = {
+            "total_entities": len(entity_objects),
+            "total_keywords": len(top_keywords),
+            "total_hashtags": len(hashtag_items),
+        }
+
         run.model_info = {
             **(run.model_info or {}),
             "embedding_model": EMBEDDING_MODEL_NAME,
             "embedding_dimensions": EMBEDDING_DIMENSIONS,
             "topic_model": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+            "ner_model": NER_MODEL_NAME,
         }
 
         run.stats = {
@@ -277,6 +380,7 @@ def execute_analysis_run(
             "preprocessing": preproc_summary,
             "sentiment": sentiment_stats,
             "topics": topics_stats,
+            "enrichment": enrichment_stats,
         }
         run.progress_pct = 100
         run.status = "completed"
