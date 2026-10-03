@@ -338,6 +338,24 @@ def test_trend_engine_end_to_end_analysis(db_session: Session):
             )
             posts.append(p)
 
+    # Theme B: Solar Renewable Energy
+    for day in range(3):
+        cur_time = base_time + timedelta(days=day)
+        for i in range(4):
+            p = Post(
+                dataset_id=ds.id,
+                original_text=f"Solar energy panels and green power day {day} {i} #Solar",
+                cleaned_text=f"solar energy panels and green power day {day} {i} solar",
+                sentiment_ready_text=f"Solar energy panels day {day} {i} #Solar",
+                timestamp=cur_time + timedelta(minutes=i * 15),
+                platform="twitter",
+                likes=10 + i * 2,
+                comments=2,
+                shares=1,
+                hashtags=["solar"],
+            )
+            posts.append(p)
+
     db_session.add_all(posts)
     db_session.commit()
 

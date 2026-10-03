@@ -2,6 +2,11 @@ from fastapi import APIRouter
 
 from app.api.v1.datasets import router as datasets_router
 from app.api.v1.endpoints.analysis import router as analysis_router
+from app.api.v1.endpoints.dashboard import (
+    dashboard_router,
+    pipeline_router,
+    posts_router,
+)
 from app.api.v1.endpoints.enrichment import router as enrichment_router
 from app.api.v1.endpoints.topics import router as topics_router
 from app.api.v1.endpoints.trends import router as trends_router
@@ -14,5 +19,8 @@ v1_router.include_router(analysis_router)
 v1_router.include_router(topics_router)
 v1_router.include_router(enrichment_router)
 v1_router.include_router(trends_router)
+v1_router.include_router(dashboard_router)
+v1_router.include_router(posts_router)
+v1_router.include_router(pipeline_router)
 
 __all__ = ["v1_router"]
