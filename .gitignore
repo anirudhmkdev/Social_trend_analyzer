@@ -39,6 +39,7 @@ venv/
 # Lockfiles should always be committed
 !requirements.lock
 !package-lock.json
+!frontend/src/lib/
 
 # Node / Frontend
 node_modules/
