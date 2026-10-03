@@ -5,7 +5,7 @@ from __future__ import annotations
 import io
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 import pandas as pd
 
@@ -318,4 +318,4 @@ def get_csv_preview(df: pd.DataFrame, n_rows: int = 20) -> List[Dict[str, Any]]:
     preview_df = df.head(n_rows).copy()
     # Replace NaN with None for JSON serialization
     preview_df = preview_df.where(pd.notnull(preview_df), None)
-    return preview_df.to_dict(orient="records")
+    return cast(List[Dict[str, Any]], preview_df.to_dict(orient="records"))

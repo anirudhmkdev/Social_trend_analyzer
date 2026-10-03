@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, cast
 
 # Common datetime format strings to try (in order of specificity)
 _DATETIME_FORMATS = [
@@ -80,7 +80,7 @@ def parse_timestamp(raw: str) -> Optional[datetime]:
         import pandas as pd
 
         dt = pd.to_datetime(raw, utc=True)
-        return dt.to_pydatetime().replace(tzinfo=timezone.utc)
+        return cast(datetime, dt.to_pydatetime().replace(tzinfo=timezone.utc))
     except Exception:
         pass
 

@@ -223,7 +223,7 @@ def generate_sample_dataset(seed: int = SEED) -> str:
     post_id = 1
 
     for theme_name, theme in THEMES.items():
-        pattern_name = theme["base_volume_pattern"]
+        pattern_name = str(theme["base_volume_pattern"])
         daily_volumes = PATTERN_GENERATORS[pattern_name]()
 
         for day_offset, volume in enumerate(daily_volumes):
