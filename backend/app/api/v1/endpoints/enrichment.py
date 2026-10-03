@@ -8,7 +8,6 @@ from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from app.database.engine import get_db
-from app.models.analysis_run import AnalysisRun
 from app.models.entity import Entity
 from app.models.keyword_snapshot import KeywordSnapshot
 from app.schemas.enrichment import (
@@ -19,20 +18,14 @@ from app.schemas.enrichment import (
     KeywordListResponse,
     KeywordResponse,
 )
+from app.services.context import resolve_run
 
 router = APIRouter(prefix="/enrichment", tags=["enrichment"])
 
 
 def _resolve_run_id(db: Session, run_id: Optional[uuid.UUID]) -> Optional[uuid.UUID]:
-    if run_id is not None:
-        return run_id
-    latest = db.execute(
-        select(AnalysisRun)
-        .where(AnalysisRun.status == "completed")
-        .order_by(AnalysisRun.completed_at.desc())
-        .limit(1)
-    ).scalar_one_or_none()
-    return latest.id if latest else None
+    run = resolve_run(db, run_id)
+    return run.id if run else None
 
 
 @router.get("/entities", response_model=EntityListResponse)

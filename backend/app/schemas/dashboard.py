@@ -92,3 +92,8 @@ class PipelineMetadataResponse(BaseModel):
     trend_thresholds: Dict[str, float]
     active_run: Optional[Dict[str, Any]] = None
     database_backend: str
+    package_versions: Dict[str, str] = {}
+    run_model_info: Dict[str, Any] = {}
+    run_stats: Dict[str, Any] = {}
+    ner_status: Dict[str, Any] = {}
+    min_posts_for_trend: int = 3

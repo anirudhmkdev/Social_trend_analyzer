@@ -45,6 +45,7 @@ class TemporalAggregator:
     def group_posts_by_window(
         self,
         posts_data: List[Dict[str, Any]],
+        end_time: datetime | None = None,
     ) -> Dict[datetime, List[Dict[str, Any]]]:
         """Group posts into UTC windows sorted chronologically."""
         windows: Dict[datetime, List[Dict[str, Any]]] = {}
@@ -54,6 +55,16 @@ class TemporalAggregator:
             if w_start not in windows:
                 windows[w_start] = []
             windows[w_start].append(p)
+        if windows:
+            cursor = min(windows)
+            end = get_utc_window_start(end_time, self.time_window) if end_time else max(windows)
+            # Bound pathological timestamp ranges before allocating a calendar series.
+            step = get_utc_window_end(cursor, self.time_window) - cursor
+            if (end - cursor) / step > 20000:
+                raise ValueError("Dataset spans too many time buckets. Use a narrower date range.")
+            while cursor <= end:
+                windows.setdefault(cursor, [])
+                cursor = get_utc_window_end(cursor, self.time_window)
         return dict(sorted(windows.items(), key=lambda kv: kv[0]))
 
     def compute_window_metrics(

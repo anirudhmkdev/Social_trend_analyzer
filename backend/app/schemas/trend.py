@@ -29,6 +29,8 @@ class TrendSnapshotResponse(BaseModel):
     sentiment_neutral_pct: Optional[float] = None
     sentiment_negative_pct: Optional[float] = None
     created_at: datetime
+    activity: List[int] = []
+    min_posts_for_trend: int = 3
 
     model_config = {"from_attributes": True}
 
