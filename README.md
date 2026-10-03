@@ -1,215 +1,101 @@
 # Social Trend Analyzer
 
-> **An NLP-Powered Platform for Detecting Emerging Topics, Sentiment Polarization, and Temporal Momentum from Social Media Text**
+A local, CPU-based workbench for investigating trends in English social-media CSV datasets. Upload once, review the original rows, map fields, validate, import valid posts and run NLP. Every derived view belongs to an explicit dataset and analysis run.
 
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
-[![Next.js 15](https://img.shields.io/badge/frontend-Next.js%2015-black.svg)](https://nextjs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/tests-80%20passed-brightgreen.svg)]()
-[![Code Coverage](https://img.shields.io/badge/coverage-87%25-green.svg)]()
+## Quick start (Windows PowerShell)
 
----
+Requirements: Python 3.12, Node.js 20 or newer, and [uv](https://docs.astral.sh/uv/). SQLite is the default. PostgreSQL is optional; set `DATABASE_URL` before running migrations. Use one backend server process.
 
-## 1. Project Overview
-
-**Social Trend Analyzer** is a full-stack Natural Language Processing (NLP) system designed to ingest social media datasets and automatically discover emerging topics, trending keywords/hashtags, sentiment dynamics, named entities, and temporal momentum.
-
-All insights are calculated locally on CPU using state-of-the-art transformer and statistical models, and surfaced through a high-precision, interactive analytics dashboard.
-
----
-
-## 2. Implementation Status: Phase 1 through Phase 12 Complete
-
-The application has been completed through all phases defined in the implementation specification:
-
-- [x] **Phase 1: Project Foundation** — FastAPI backend, Next.js 15 App Router frontend, SQLAlchemy 2.0 dialect-aware models, Alembic migrations, Docker Compose PostgreSQL.
-- [x] **Phase 2: Dataset Ingestion** — Resilient CSV parser, auto-column mapping, schema validation, normalization, and 850-post multi-platform synthetic demo generator.
-- [x] **Phase 3: NLP Preprocessing** — Canonical, immutable `v1.0.0` text representations (`original_text`, `cleaned_text`, `sentiment_ready_text`, runtime case-preserved text for NER), deduplication hash tracking.
-- [x] **Phase 4: Sentiment Analysis** — CardiffNLP Twitter-RoBERTa 3-class classifier with batched CPU inference, continuous polarity $[-1, 1]$, and single-run concurrency guard (HTTP 409 Conflict).
-- [x] **Phase 5: Topic Modeling** — Sentence Transformers `all-MiniLM-L6-v2` dense embeddings, BERTopic with UMAP (seed 42), HDBSCAN (`nr_topics=None`), and c-TF-IDF keyword extraction.
-- [x] **Phase 6: NLP Enrichment** — spaCy `en_core_web_sm` Named Entity Recognition on case-preserved text, sublinear TF-IDF keyword extraction, and hashtag velocity tracking.
-- [x] **Phase 7: Trend Detection Engine** — Multi-factor momentum modeling, centered logistic normalization ($S(0)=0.50$), exponential recency decay $R=e^{-\lambda \Delta t}$, burstiness $z$-score detection, and 5-state trend classification.
-- [x] **Phase 8: Analytics APIs** — High-performance REST endpoints (`/dashboard/summary`, `/dashboard/timeline`, `/posts/search`, `/pipeline/metadata`).
-- [x] **Phase 9: Analytics Dashboard** — Impeccable precision ledger UI (`/dashboard`) featuring KPI cards, timeline graphs, trending topics table with TrendScore meter, entity/hashtag panels, and 1-click synthetic demo generator.
-- [x] **Phase 10: Trend Investigation & Search** — `/topics` explorer, `/topics/[id]` deep-dive with trajectory history & representative post feed, `/search` with full-text search & sentiment/platform filters, and `/datasets` repository.
-- [x] **Phase 11: Evaluation & Testing** — Live `/pipeline` model ledger & mathematical formulation inspector, 80 passing automated unit/integration tests with **87% code coverage**.
-- [x] **Phase 12: Documentation & Academic Polish** — Model evaluation benchmarks, academic report notes, and comprehensive master documentation.
-
----
-
-## 3. System Architecture
-
-```mermaid
-flowchart TD
-    subgraph Client["Frontend (Next.js 15 + TypeScript)"]
-        UI["Impeccable Precision Ledger UI"]
-        DASH["/dashboard (KPIs, Timelines, Top Trends)"]
-        TOP["/topics & /topics/:id (Deep-dive)"]
-        SRCH["/search (Text & Filter Search)"]
-        PIPE["/pipeline (Live Ledger & Math Proofs)"]
-        DATA["/datasets (Repository & Upload)"]
-    end
-
-    subgraph Backend["FastAPI Application (v1)"]
-        ROUTER["REST API Router (/api/v1)"]
-        GUARD["Single-Run Concurrency Guard (409)"]
-        SVC_DS["Dataset Service"]
-        SVC_NLP["NLP Orchestrator"]
-        SVC_DASH["Dashboard Analytics Service"]
-    end
-
-    subgraph Pipeline["6-Stage NLP Pipeline"]
-        STAGE1["1. Canonical Cleaner (v1.0.0)"]
-        STAGE2["2. Sentence Embedder (all-MiniLM-L6-v2)"]
-        STAGE3["3. RoBERTa Sentiment (cardiffnlp)"]
-        STAGE4["4. BERTopic (UMAP + HDBSCAN + c-TFIDF)"]
-        STAGE5["5. spaCy NER & TF-IDF Keywords"]
-        STAGE6["6. Trend Momentum Engine"]
-    end
-
-    subgraph Database["Relational Storage (SQLAlchemy 2.0)"]
-        DB[(PostgreSQL 16 / SQLite Fallback)]
-    end
-
-    UI --> ROUTER
-    ROUTER --> GUARD
-    GUARD --> SVC_NLP
-    SVC_NLP --> STAGE1 --> STAGE2 --> STAGE3 --> STAGE4 --> STAGE5 --> STAGE6
-    STAGE6 --> DB
-    SVC_DS --> DB
-    SVC_DASH --> DB
-    DB --> ROUTER
+```powershell
+git clone https://github.com/anirudhmkdev/Social_trend_analyzer.git
+cd Social_trend_analyzer/backend
+uv venv .venv --python 3.12
+uv pip sync --python .venv/Scripts/python.exe requirements.lock --index-strategy unsafe-best-match
+Copy-Item .env.example .env
+.\.venv\Scripts\python.exe -m alembic upgrade head
+# Optional entity enrichment; omit to run with explicitly reported NER degradation:
+uv pip install --python .venv/Scripts/python.exe --no-deps https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
----
+In another terminal:
 
-## 4. Key Mathematical Formulations
-
-### 4.1 Base Momentum ($M_{\text{base}}$)
-The base momentum combines volume velocity, burstiness, engagement acceleration, and sentiment polarization:
-
-$$M_{\text{base}} = w_{\text{vol}} S(V) + w_{\text{burst}} S(B) + w_{\text{eng}} S(E) + w_{\text{sent}} S(|S|)$$
-
-*Default Weights:* $w_{\text{vol}} = 0.35$, $w_{\text{burst}} = 0.25$, $w_{\text{eng}} = 0.25$, $w_{\text{sent}} = 0.15$.
-
-### 4.2 Centered Logistic Normalization ($S(x)$)
-Growth rates and deviations $x$ are normalized via centered logistic sigmoid:
-
-$$S(x) = \frac{1}{1 + e^{-kx}}, \quad \text{Guaranteeing: } S(0) = 0.50 \text{ (Neutral Baseline)}$$
-
-### 4.3 Recency Modulation ($R$)
-Recency exponentially decays deviations from baseline:
-
-$$R(\Delta t) = \exp(-\lambda \Delta t) \in (0, 1]$$
-$$\text{TrendScore} = 0.50 + (M_{\text{base}} - 0.50) \times R(\Delta t)$$
-
-*Safety Property:* Dormant topics naturally decay back to $0.50$ (stable neutral), preventing false alarms.
-
----
-
-## 5. Getting Started
-
-### 5.1 Prerequisites
-- **Python:** 3.11 or 3.12 (Python 3.12 recommended; `uv` or `python -m venv`)
-- **Node.js:** v18+ or v20+ (v24 supported) with `npm`
-- **Docker:** Optional (SQLite is supported out-of-the-box for zero-setup local dev)
-
----
-
-### 5.2 Quick Setup
-
-#### 1. Backend Setup
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies from locked requirements
-pip install -r requirements.lock
-
-# (Optional) Download spaCy English model if not bundled
-python -m spacy download en_core_web_sm
-
-# Apply database migrations
-alembic upgrade head
-
-# Start FastAPI development server
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-#### 2. Frontend Setup
-```bash
-cd frontend
-
-# Install dependencies from committed package-lock
-npm install
-
-# Start Next.js development server
+```powershell
+cd Social_trend_analyzer/frontend
+npm ci
+Copy-Item .env.local.example .env.local
 npm run dev
 ```
 
-Visit **http://localhost:3000** to access the dashboard.
+Open [the workbench](http://localhost:3000), then Datasets → Add Dataset. The first analysis downloads CardiffNLP RoBERTa and MiniLM weights from Hugging Face into the local model cache. Network access is needed for this initial download; subsequent inference is local. Core model loading failure marks the analysis failed with a recovery message; no random vectors or heuristic sentiment substitute is used. Missing spaCy weights omit entities and mark the completed run as degraded. Install the optional model and restart before analyzing again. Do not commit caches, databases or uploaded files.
 
----
+Linux/macOS: use `.venv/bin/python` in place of `.venv/Scripts/python.exe`. The tested environment is Windows/Python 3.12; portability has not been independently exercised here. The lock includes the official CPU PyTorch index and hashes. `pyproject.toml` is the dependency source.
 
-## 6. API Reference
+## CSV workflow
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/v1/health` | Service health status check |
-| `POST` | `/api/v1/datasets/sample` | Ingests or returns 850-post multi-platform demo dataset |
-| `POST` | `/api/v1/datasets/upload` | Upload custom CSV dataset with column mapping |
-| `GET` | `/api/v1/datasets` | List all registered datasets and metadata |
-| `POST` | `/api/v1/analysis/run` | Enqueue an analysis run (concurrency guard: max 1 active) |
-| `GET` | `/api/v1/analysis/{run_id}/status` | Poll run status, progress stage, and timing |
-| `GET` | `/api/v1/dashboard/summary` | Comprehensive KPI aggregates, sentiment, and top trends |
-| `GET` | `/api/v1/dashboard/timeline` | Temporal volume, sentiment, and engagement timeline |
-| `GET` | `/api/v1/topics` | List discovered topic clusters for an analysis run |
-| `GET` | `/api/v1/topics/{topic_id}` | Topic detail, trajectory history, and representative posts |
-| `GET` | `/api/v1/trends` | Filterable trend snapshots (emerging, rising, burst, etc.) |
-| `GET` | `/api/v1/posts/search` | Search posts with full-text query, platform, and sentiment |
-| `GET` | `/api/v1/pipeline/metadata` | Inspect active model versions, parameters, and weights |
+UTF-8 (including BOM) or Windows-1252 CSV, maximum 50 MB. Text and timestamp are required. Platform, hashtags, author/external ID and likes/comments/shares are optional. Common column aliases are suggested; confirm and correct the mapping before validation. Naive timestamps assume UTC. Ambiguous day/month dates follow the documented parser order (US month/day before day/month); ISO timestamps are preferable.
 
----
+Uploaded → Mapped → Validated → Imported → Preprocessed. Mapping edits reset validation. Validation examines the staged source; row details show the first 200 issues with zero-based indices excluding the header. Missing/short text and missing/invalid timestamps exclude rows. Repeated text remains imported and is flagged as duplicate, because recurrence over time can matter. Optional invalid engagement becomes unavailable (`NULL`), whereas a measured zero stays zero. Import with no valid rows is rejected. A repeated import returns the existing dataset without duplicating posts. Imported datasets are immutable; upload a corrected file as a new dataset.
 
-## 7. Automated Verification Suite
+Staged filenames are server-generated UUIDs. Files remain local until dataset deletion, which also cascades posts, runs and derived results. Active analyses block deletion. The batch worker is an in-process background task, not a durable queue; server restart marks interrupted jobs failed and allows retry. Run exactly one server process, without reload during analysis.
 
-Run full verification across backend and frontend:
+## Investigation
 
-```bash
-# Backend checks
+| Page | Purpose |
+|---|---|
+| Dashboard | Selected dataset/run, platform and UTC hourly/daily/weekly window; ranked trends first, real time series and evidence |
+| Datasets | Upload, raw preview, detection, mapping, validation, import, analysis progress/history and confirmed deletion |
+| Trends & Topics | Server-filtered labels, keywords and latest classifications; outlier count |
+| Topic detail | Full topic aggregates, trend/sentiment history, representative posts, entities, keywords, hashtags and raw model provenance |
+| Explorer | Original text search with platform, sentiment, topic, inclusive UTC date filters and stable pagination |
+| Analysis | Methodology, actual model status, package versions, fixed parameters, formula and recorded run statistics |
+
+`/` redirects to `/dashboard`; legacy `/search` and `/pipeline` URLs redirect to Explorer and Analysis. URL parameters `dataset`, `run`, `window`, `platform` are shareable context. Invalid/deleted context is shown as an error with recovery; APIs do not select the latest run globally. Selecting a dataset without a run chooses its latest completed run in the UI and records that choice in the URL.
+
+## Models and interpretation
+
+- [CardiffNLP Twitter-RoBERTa sentiment](https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment-latest): CC-BY-4.0, English, three classes; input truncates to 128 tokens.
+- [MiniLM embeddings](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2): Apache-2.0, 384 dimensions.
+- BERTopic + seeded UMAP + HDBSCAN + c-TF-IDF; no target topic count. Minimum cluster size scales with dataset size. Very similar centroids merge conservatively; raw IDs/keywords remain available. Below 15 posts, an explicitly recorded agglomerative method is used. Labels are local keyword-derived summaries, not ground truth.
+- [spaCy en_core_web_sm](https://spacy.io/models/en#en_core_web_sm): optional MIT model. NER preserves case, excludes hashtag tokens and filters obvious generic/accidental entities. Predictions can still be wrong.
+
+The 900-post deterministic demo covers five themes, three platforms and 21 UTC days: rising AI, declining crypto, stable sports/climate and emerging health. Generator intent is tested; it is not an accuracy benchmark for learned topic assignments.
+
+Existing demo records from the older generator are preserved. The demo action explains how to delete/reload them explicitly. Migration 005 marks historical completed runs without current provenance as unverified; rerun to obtain current model metadata.
+
+Let `M = .35 volume + .25 engagement + .20 velocity + .20 burst`, with centered logistic signals. `TrendScore = .5 + (M − .5) × recency`. Missing engagement redistributes its weight. Recency references the dataset's latest timestamp. Classification thresholds: Emerging ≥ .70 with new/reappearing activity, Rising ≥ .60, Stable ≥ .40, otherwise Declining. **Current volume < 3 forces Stable**, even with a high score. The UI explains this guard. Sentiment does not affect TrendScore; Burst is a signal, not a separate class. See [NLP methodology](NLP_PIPELINE.md).
+
+## Verification
+
+```powershell
 cd backend
-python -m ruff check app/ tests/          # Linting (0 errors)
-python -m mypy app/ --ignore-missing-imports # Type checking (67 files, 0 errors)
-python -m pytest tests/ -v                 # 80 unit & integration tests passing
-python -m pytest --cov=app tests/          # Code coverage (87%)
-
-# Frontend checks
-cd frontend
-npm run lint                               # ESLint (0 errors, 0 warnings)
-npm run build                              # Next.js 15 production build (10 routes)
+.\.venv\Scripts\python.exe -m ruff check app tests scripts
+.\.venv\Scripts\python.exe -m mypy app
+.\.venv\Scripts\python.exe -m pytest --cov=app --cov-report=term-missing
+# Real weights and a running API on port 8000, using a separate disposable database:
+.\.venv\Scripts\python.exe scripts/full_nlp_smoke.py
+cd ../frontend
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
+# Install Chrome or change the Playwright channel to installed Chromium.
+# On Linux/macOS set E2E_PYTHON to an absolute .venv/bin/python path.
+npm run test:e2e
+# Optional: real weights, migrated disposable DB, backend 8000 and production UI 3000 running:
+$env:E2E_REAL_NLP='1'
+npm run test:e2e
+Remove-Item Env:E2E_REAL_NLP
 ```
 
----
+Unit/integration tests inject inference fixtures only from `backend/tests/model_fixtures.py`. The E2E starts the real FastAPI routes, migrations and database on port 8001 plus Next.js on 3001; it substitutes inference, not HTTP responses. It has its own `.next-e2e` output and `.verification/e2e.db`. The full-model smoke exercises a 90-row custom upload and the 900-post demo with real RoBERTa, MiniLM, BERTopic and spaCy. Do not confuse those evidence boundaries. [Audit, measured results and limitations](docs/CODEX_AUDIT.md) is the verification record.
 
-## 8. Documentation Index
+Regenerate the backend lock after changing `pyproject.toml`:
 
-- [PRD.md](PRD.md) — Product requirements and user journeys.
-- [ARCHITECTURE.md](ARCHITECTURE.md) — Detailed technical architecture and data flow.
-- [NLP_PIPELINE.md](NLP_PIPELINE.md) — NLP pipeline architecture and stage specifications.
-- [DATA_SCHEMA.md](DATA_SCHEMA.md) — Relational schema design and indexing strategy.
-- [docs/MODEL_EVALUATION.md](docs/MODEL_EVALUATION.md) — Model selection benchmarks, comparison tables, and mathematical proofs.
-- [docs/PROJECT_REPORT_NOTES.md](docs/PROJECT_REPORT_NOTES.md) — Complete academic report and presentation guide.
+```powershell
+uv pip compile pyproject.toml --extra dev --python-version 3.12 --generate-hashes --emit-index-url --extra-index-url https://download.pytorch.org/whl/cpu --index-strategy unsafe-best-match -o requirements.lock
+```
 
----
+## Documentation and license
 
-## 9. License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
-Pretrained transformer models are subject to their respective open licenses:
-- `cardiffnlp/twitter-roberta-base-sentiment-latest`: CC-BY-4.0
-- `sentence-transformers/all-MiniLM-L6-v2`: Apache 2.0
-- `spaCy en_core_web_sm`: MIT
+[Requirements](PRD.md) · [Product context](PRODUCT.md) · [Design](DESIGN.md) · [Architecture](ARCHITECTURE.md) · [Schema](DATA_SCHEMA.md) · [NLP](NLP_PIPELINE.md) · [Evaluation](docs/MODEL_EVALUATION.md) · [Academic report notes](docs/PROJECT_REPORT_NOTES.md). The roadmap is historical planning and does not establish completion. Project code is MIT licensed; pretrained model/data licenses remain separate. See [LICENSE](LICENSE).
