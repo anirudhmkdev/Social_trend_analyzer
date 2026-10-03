@@ -88,12 +88,20 @@ def test_analysis_run_concurrency_guard(db_session: Session):
         name="Dataset For Concurrency",
         filename="test.csv",
         source_type="csv",
-        status="ready",
+        status="imported",
     )
     db_session.add(dataset)
     db_session.commit()
     db_session.refresh(dataset)
 
+    db_session.add(
+        Post(
+            dataset_id=dataset.id,
+            original_text="Imported test post",
+            timestamp=datetime.now(timezone.utc),
+        )
+    )
+    db_session.commit()
     # First run succeeds
     run1 = create_analysis_run(db_session, dataset.id)
     assert run1.status == "pending"
@@ -116,7 +124,7 @@ def test_analysis_pipeline_execution(db_session: Session):
         name="Dataset For Pipeline Run",
         filename="test.csv",
         source_type="csv",
-        status="uploaded",
+        status="imported",
     )
     db_session.add(dataset)
     db_session.commit()
@@ -167,12 +175,20 @@ def test_analysis_api_endpoints(client: TestClient, db_session: Session):
         name="API Test Dataset",
         filename="api_test.csv",
         source_type="csv",
-        status="uploaded",
+        status="imported",
     )
     db_session.add(dataset)
     db_session.commit()
     db_session.refresh(dataset)
 
+    db_session.add(
+        Post(
+            dataset_id=dataset.id,
+            original_text="Imported test post",
+            timestamp=datetime.now(timezone.utc),
+        )
+    )
+    db_session.commit()
     # Trigger analysis run
     resp = client.post(
         "/api/v1/analysis/run",

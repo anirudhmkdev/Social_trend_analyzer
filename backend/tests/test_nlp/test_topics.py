@@ -54,13 +54,13 @@ def test_sentence_embedder_empty_input():
 def test_topic_naming_utility():
     kw = [{"word": "climate"}, {"word": "emissions"}, {"word": "renewable"}]
     name = generate_topic_name(kw, 0)
-    assert name == "Climate, Emissions & Renewable"
+    assert name == "Renewable Energy"
 
     kw_two = [{"word": "crypto"}, {"word": "bitcoin"}]
-    assert generate_topic_name(kw_two, 1) == "Crypto & Bitcoin"
+    assert generate_topic_name(kw_two, 1) == "Crypto Markets"
 
     kw_one = [{"word": "sports"}]
-    assert generate_topic_name(kw_one, 2) == "Sports"
+    assert generate_topic_name(kw_one, 2) == "Sports Competition"
 
     # Outlier naming
     assert generate_topic_name([], -1) == "Unclassified (Outliers)"
@@ -92,7 +92,7 @@ def test_topic_pipeline_and_db_persistence(db_session: Session):
         name="Topic Test Dataset",
         filename="topics.csv",
         source_type="csv",
-        status="uploaded",
+        status="imported",
     )
     db_session.add(dataset)
     db_session.commit()
@@ -141,7 +141,7 @@ def test_topics_api_endpoints(client: TestClient, db_session: Session):
         name="API Topics Dataset",
         filename="api_topics.csv",
         source_type="csv",
-        status="uploaded",
+        status="imported",
     )
     db_session.add(dataset)
     db_session.commit()

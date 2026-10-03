@@ -309,7 +309,7 @@ def test_trend_engine_end_to_end_analysis(db_session: Session):
         name="Trend Test Dataset",
         filename="trend_test.csv",
         source_type="synthetic",
-        status="ready",
+        status="imported",
         row_count=30,
         column_mapping={"text": "text", "timestamp": "timestamp", "likes": "likes"},
     )
@@ -386,7 +386,7 @@ def test_trend_api_endpoints(client: TestClient, db_session: Session):
         name="API Trend Dataset",
         filename="api_trend.csv",
         source_type="synthetic",
-        status="ready",
+        status="imported",
         row_count=20,
         column_mapping={"text": "text", "timestamp": "timestamp"},
     )
