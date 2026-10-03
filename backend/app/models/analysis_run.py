@@ -35,15 +35,9 @@ class AnalysisRun(Base):
     )  # pending, running, completed, failed
     progress_pct: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     current_step: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    config: Mapped[Dict[str, Any]] = mapped_column(
-        PortableJSON, nullable=False, default=dict
-    )
-    model_info: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        PortableJSON, nullable=True
-    )
-    stats: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        PortableJSON, nullable=True
-    )
+    config: Mapped[Dict[str, Any]] = mapped_column(PortableJSON, nullable=False, default=dict)
+    model_info: Mapped[Optional[Dict[str, Any]]] = mapped_column(PortableJSON, nullable=True)
+    stats: Mapped[Optional[Dict[str, Any]]] = mapped_column(PortableJSON, nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

@@ -52,7 +52,11 @@ THEMES = {
         "hashtags": ["artificialintelligence", "machinelearning", "chatgpt", "llm", "aitech"],
         "entities": ["OpenAI", "Google DeepMind", "Microsoft", "Meta AI", "Anthropic"],
         "keywords": [  # noqa: E501
-            "large language model", "neural network", "generative AI", "automation", "deep learning"
+            "large language model",
+            "neural network",
+            "generative AI",
+            "automation",
+            "deep learning",
         ],
         "templates": [
             "{entity} launches new {keyword} model. #artificialintelligence #llm",
@@ -101,7 +105,11 @@ THEMES = {
         "hashtags": ["football", "nba", "worldcup", "tennis", "olympics"],
         "entities": ["FIFA", "NBA", "Wimbledon", "IOC", "UEFA"],
         "keywords": [
-            "championship", "tournament", "player transfer", "season opener", "world record"
+            "championship",
+            "tournament",
+            "player transfer",
+            "season opener",
+            "world record",
         ],
         "templates": [
             "{entity} announces {keyword} schedule. #football #sports",
@@ -122,6 +130,7 @@ PLATFORM_WEIGHTS = [0.45, 0.35, 0.20]
 # ---------------------------------------------------------------------------
 # Volume pattern generators (number of posts per day for 21 days)
 # ---------------------------------------------------------------------------
+
 
 def _stable_pattern(base: int) -> List[int]:
     """Returns ~stable daily volumes with small noise."""
@@ -173,6 +182,7 @@ PATTERN_GENERATORS = {
 # Engagement distribution by platform
 # ---------------------------------------------------------------------------
 
+
 def _gen_engagement(platform: str, rng: random.Random) -> Tuple[int, int, int]:
     """Generate realistic likes, comments, shares for a post."""
     if platform == "twitter":
@@ -194,6 +204,7 @@ def _gen_engagement(platform: str, rng: random.Random) -> Tuple[int, int, int]:
 # Text generation
 # ---------------------------------------------------------------------------
 
+
 def _make_post_text(theme_name: str, rng: random.Random) -> str:
     theme = THEMES[theme_name]
     template = rng.choice(theme["templates"])
@@ -209,6 +220,7 @@ def _make_author_id(rng: random.Random) -> str:
 # ---------------------------------------------------------------------------
 # Main generator
 # ---------------------------------------------------------------------------
+
 
 def generate_sample_dataset(seed: int = SEED) -> str:
     """
@@ -243,6 +255,7 @@ def generate_sample_dataset(seed: int = SEED) -> str:
 
                 # Extract hashtags from text
                 import re
+
                 hashtags = ",".join(re.findall(r"#(\w+)", text))
 
                 rows.append(
@@ -268,8 +281,17 @@ def generate_sample_dataset(seed: int = SEED) -> str:
     # Write CSV
     output = io.StringIO()
     fieldnames = [
-        "id", "text", "created_at", "platform", "hashtags",
-        "likes", "comments", "shares", "author_id", "theme", "source_type"
+        "id",
+        "text",
+        "created_at",
+        "platform",
+        "hashtags",
+        "likes",
+        "comments",
+        "shares",
+        "author_id",
+        "theme",
+        "source_type",
     ]
     writer = csv.DictWriter(output, fieldnames=fieldnames)
     writer.writeheader()
@@ -280,6 +302,7 @@ def generate_sample_dataset(seed: int = SEED) -> str:
 
 if __name__ == "__main__":
     import sys
+
     csv_content = generate_sample_dataset()
     row_count = csv_content.count("\n") - 1  # subtract header
     print(f"Generated {row_count} rows", file=sys.stderr)

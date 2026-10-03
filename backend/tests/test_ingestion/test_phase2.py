@@ -109,10 +109,12 @@ def make_csv_bytes(rows: list[dict], fieldnames: list[str] | None = None) -> byt
 
 
 def test_parse_valid_csv() -> None:
-    content = make_csv_bytes([
-        {"text": "Hello world", "created_at": "2026-07-01T12:00:00Z", "platform": "twitter"},
-        {"text": "Another post", "created_at": "2026-07-02T09:30:00Z", "platform": "reddit"},
-    ])
+    content = make_csv_bytes(
+        [
+            {"text": "Hello world", "created_at": "2026-07-01T12:00:00Z", "platform": "twitter"},
+            {"text": "Another post", "created_at": "2026-07-02T09:30:00Z", "platform": "reddit"},
+        ]
+    )
     result = parse_csv(content, "test.csv")
     assert result.total_rows == 2
     assert (
@@ -144,10 +146,13 @@ def test_parse_file_too_large() -> None:
 
 def test_validator_valid_rows() -> None:
     import pandas as pd
-    df = pd.DataFrame([
-        {"text": "Hello world", "timestamp": "2026-07-01T12:00:00Z"},
-        {"text": "Another post", "timestamp": "2026-07-02T09:30:00Z"},
-    ])
+
+    df = pd.DataFrame(
+        [
+            {"text": "Hello world", "timestamp": "2026-07-01T12:00:00Z"},
+            {"text": "Another post", "timestamp": "2026-07-02T09:30:00Z"},
+        ]
+    )
     mapping = {"text": "text", "timestamp": "timestamp"}
     result, valid_df = validate_dataset(df, mapping)
     assert result.total_rows == 2
@@ -157,10 +162,13 @@ def test_validator_valid_rows() -> None:
 
 def test_validator_missing_text() -> None:
     import pandas as pd
-    df = pd.DataFrame([
-        {"text": None, "timestamp": "2026-07-01T12:00:00Z"},
-        {"text": "Valid post", "timestamp": "2026-07-02T09:30:00Z"},
-    ])
+
+    df = pd.DataFrame(
+        [
+            {"text": None, "timestamp": "2026-07-01T12:00:00Z"},
+            {"text": "Valid post", "timestamp": "2026-07-02T09:30:00Z"},
+        ]
+    )
     mapping = {"text": "text", "timestamp": "timestamp"}
     result, valid_df = validate_dataset(df, mapping)
     assert result.missing_text == 1
@@ -169,10 +177,13 @@ def test_validator_missing_text() -> None:
 
 def test_validator_invalid_timestamp() -> None:
     import pandas as pd
-    df = pd.DataFrame([
-        {"text": "Hello", "timestamp": "not-a-date"},
-        {"text": "Valid", "timestamp": "2026-07-01T12:00:00Z"},
-    ])
+
+    df = pd.DataFrame(
+        [
+            {"text": "Hello", "timestamp": "not-a-date"},
+            {"text": "Valid", "timestamp": "2026-07-01T12:00:00Z"},
+        ]
+    )
     mapping = {"text": "text", "timestamp": "timestamp"}
     result, valid_df = validate_dataset(df, mapping)
     assert result.invalid_timestamp == 1
@@ -180,11 +191,14 @@ def test_validator_invalid_timestamp() -> None:
 
 def test_validator_duplicates() -> None:
     import pandas as pd
-    df = pd.DataFrame([
-        {"text": "Same post", "timestamp": "2026-07-01T12:00:00Z"},
-        {"text": "Same post", "timestamp": "2026-07-02T09:30:00Z"},
-        {"text": "Unique post", "timestamp": "2026-07-03T08:00:00Z"},
-    ])
+
+    df = pd.DataFrame(
+        [
+            {"text": "Same post", "timestamp": "2026-07-01T12:00:00Z"},
+            {"text": "Same post", "timestamp": "2026-07-02T09:30:00Z"},
+            {"text": "Unique post", "timestamp": "2026-07-03T08:00:00Z"},
+        ]
+    )
     mapping = {"text": "text", "timestamp": "timestamp"}
     result, valid_df = validate_dataset(df, mapping)
     assert result.duplicate_rows == 1
@@ -197,6 +211,7 @@ def test_validator_duplicates() -> None:
 
 def test_normalize_basic_row() -> None:
     import uuid
+
     dataset_id = uuid.uuid4()
     row = {
         "text": "Hello #world @user",
@@ -207,9 +222,15 @@ def test_normalize_basic_row() -> None:
         "shares": "10",
     }
     mapping = {
-        "text": "text", "timestamp": "timestamp", "platform": "platform",
-        "likes": "likes", "comments": "comments", "shares": "shares",
-        "hashtags": None, "author_id": None, "external_id": None,
+        "text": "text",
+        "timestamp": "timestamp",
+        "platform": "platform",
+        "likes": "likes",
+        "comments": "comments",
+        "shares": "shares",
+        "hashtags": None,
+        "author_id": None,
+        "external_id": None,
     }
     result = normalize_row(row, dataset_id, mapping)
     assert result is not None
@@ -221,6 +242,7 @@ def test_normalize_basic_row() -> None:
 
 def test_normalize_missing_text_returns_none() -> None:
     import uuid
+
     dataset_id = uuid.uuid4()
     row = {"text": None, "timestamp": "2026-07-01T12:00:00Z"}
     mapping = {"text": "text", "timestamp": "timestamp", "likes": None}
@@ -231,14 +253,20 @@ def test_normalize_missing_text_returns_none() -> None:
 def test_normalize_engagement_unavailable_vs_zero() -> None:
     """Unmapped engagement field → None. Mapped field with 0 → 0."""
     import uuid
+
     dataset_id = uuid.uuid4()
     # Engagement columns not mapped
     row = {"text": "Post", "timestamp": "2026-07-01T12:00:00Z", "likes": 0}
     mapping_no_likes = {
-        "text": "text", "timestamp": "timestamp",
+        "text": "text",
+        "timestamp": "timestamp",
         "likes": None,  # NOT mapped
-        "comments": None, "shares": None, "hashtags": None,
-        "author_id": None, "external_id": None, "platform": None,
+        "comments": None,
+        "shares": None,
+        "hashtags": None,
+        "author_id": None,
+        "external_id": None,
+        "platform": None,
     }
     result_no = normalize_row(row, dataset_id, mapping_no_likes)
     assert result_no is not None
@@ -306,10 +334,12 @@ def test_get_dataset_not_found(client: object) -> None:
 
 def test_upload_csv_valid(client: object) -> None:
     """Test uploading a valid CSV file."""
-    csv_content = make_csv_bytes([
-        {"text": "Test post 1", "created_at": "2026-07-01T12:00:00Z"},
-        {"text": "Test post 2", "created_at": "2026-07-02T12:00:00Z"},
-    ])
+    csv_content = make_csv_bytes(
+        [
+            {"text": "Test post 1", "created_at": "2026-07-01T12:00:00Z"},
+            {"text": "Test post 2", "created_at": "2026-07-02T12:00:00Z"},
+        ]
+    )
     response = client.post(  # type: ignore[attr-defined]
         "/api/v1/datasets/upload",
         files={"file": ("test.csv", csv_content, "text/csv")},
@@ -341,9 +371,11 @@ def test_upload_wrong_extension(client: object) -> None:
 def test_delete_dataset(client: object) -> None:
     """Test deleting a dataset."""
     # First create one
-    csv_content = make_csv_bytes([
-        {"text": "Post to delete", "created_at": "2026-07-01T12:00:00Z"},
-    ])
+    csv_content = make_csv_bytes(
+        [
+            {"text": "Post to delete", "created_at": "2026-07-01T12:00:00Z"},
+        ]
+    )
     create_response = client.post(  # type: ignore[attr-defined]
         "/api/v1/datasets/upload",
         files={"file": ("del.csv", csv_content, "text/csv")},

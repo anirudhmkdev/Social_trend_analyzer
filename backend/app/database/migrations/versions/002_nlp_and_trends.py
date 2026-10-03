@@ -5,6 +5,7 @@ Revises: 001_initial
 Create Date: 2026-10-03 17:50:00.000000
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -112,9 +113,7 @@ def upgrade() -> None:
     )
     op.create_index("idx_sentiment_post", "sentiment_results", ["post_id"])
     op.create_index("idx_sentiment_run", "sentiment_results", ["analysis_run_id"])
-    op.create_index(
-        "idx_sentiment_label", "sentiment_results", ["analysis_run_id", "label"]
-    )
+    op.create_index("idx_sentiment_label", "sentiment_results", ["analysis_run_id", "label"])
 
     # 5. entities
     op.create_table(
@@ -196,9 +195,7 @@ def upgrade() -> None:
     )
     op.create_index("idx_trend_run", "trend_snapshots", ["analysis_run_id"])
     op.create_index("idx_trend_topic", "trend_snapshots", ["topic_id"])
-    op.create_index(
-        "idx_trend_score", "trend_snapshots", ["analysis_run_id", "trend_score"]
-    )
+    op.create_index("idx_trend_score", "trend_snapshots", ["analysis_run_id", "trend_score"])
 
     # 8. keyword_snapshots
     op.create_table(

@@ -35,9 +35,11 @@ def run_dataset_preprocessing(
     if not dataset:
         raise ValueError(f"Dataset {dataset_id} not found")
 
-    posts = db.execute(
-        select(Post).where(Post.dataset_id == dataset_id).order_by(Post.timestamp.asc())
-    ).scalars().all()
+    posts = (
+        db.execute(select(Post).where(Post.dataset_id == dataset_id).order_by(Post.timestamp.asc()))
+        .scalars()
+        .all()
+    )
 
     if not posts:
         return {
@@ -79,9 +81,7 @@ def run_dataset_preprocessing(
     duplicate_count = 0
 
     for post in posts:
-        res: PreprocessedText = preprocessor.process(
-            post.original_text, seen_hashes=seen_hashes
-        )
+        res: PreprocessedText = preprocessor.process(post.original_text, seen_hashes=seen_hashes)
         post.cleaned_text = res.cleaned_text
         post.sentiment_ready_text = res.sentiment_ready_text
         post.hashtags = res.hashtags

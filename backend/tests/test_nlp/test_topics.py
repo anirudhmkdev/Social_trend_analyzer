@@ -128,15 +128,11 @@ def test_topic_pipeline_and_db_persistence(db_session: Session):
     assert run.model_info["embedding_dimensions"] == EMBEDDING_DIMENSIONS
 
     # Check topics table
-    db_topics = (
-        db_session.query(Topic).filter(Topic.analysis_run_id == run.id).all()
-    )
+    db_topics = db_session.query(Topic).filter(Topic.analysis_run_id == run.id).all()
     assert len(db_topics) >= 1
 
     # Check post_topics junction table
-    post_topics = (
-        db_session.query(PostTopic).filter(PostTopic.analysis_run_id == run.id).all()
-    )
+    post_topics = db_session.query(PostTopic).filter(PostTopic.analysis_run_id == run.id).all()
     assert len(post_topics) == len(posts)
 
 

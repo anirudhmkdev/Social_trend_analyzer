@@ -99,8 +99,16 @@ class EntityRecognizer:
             # Simple heuristic labeling
             norm = val.lower()
             org_terms = [
-                "inc", "corp", "openai", "google", "meta", "microsoft",
-                "deepmind", "apple", "un", "ipcc"
+                "inc",
+                "corp",
+                "openai",
+                "google",
+                "meta",
+                "microsoft",
+                "deepmind",
+                "apple",
+                "un",
+                "ipcc",
             ]
             gpe_terms = ["york", "paris", "london", "europe", "california", "tokyo", "china", "usa"]
             if any(term in norm for term in org_terms):

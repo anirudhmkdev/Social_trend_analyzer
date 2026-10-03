@@ -65,9 +65,9 @@ def load_sample(db: Session = Depends(get_db)) -> SampleDatasetResponse:
     If the sample already exists it is returned without re-importing.
     """
     dataset = dataset_service.load_sample_dataset(db=db)
-    total_posts = db.query(dataset_service.Post).filter(
-        dataset_service.Post.dataset_id == dataset.id
-    ).count()
+    total_posts = (
+        db.query(dataset_service.Post).filter(dataset_service.Post.dataset_id == dataset.id).count()
+    )
     return SampleDatasetResponse(
         dataset_id=dataset.id,
         name=dataset.name,

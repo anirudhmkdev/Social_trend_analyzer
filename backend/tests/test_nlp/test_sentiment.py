@@ -153,9 +153,7 @@ def test_analysis_pipeline_execution(db_session: Session):
 
     # Verify sentiment results in DB
     sent_results = (
-        db_session.query(SentimentResult)
-        .filter(SentimentResult.analysis_run_id == run.id)
-        .all()
+        db_session.query(SentimentResult).filter(SentimentResult.analysis_run_id == run.id).all()
     )
     assert len(sent_results) == 2
     for s in sent_results:

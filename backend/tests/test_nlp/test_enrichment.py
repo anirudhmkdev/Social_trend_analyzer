@@ -109,9 +109,7 @@ def test_enrichment_pipeline_db_persistence(db_session: Session):
 
     # Check keywords in DB
     kw_records = (
-        db_session.query(KeywordSnapshot)
-        .filter(KeywordSnapshot.analysis_run_id == run.id)
-        .all()
+        db_session.query(KeywordSnapshot).filter(KeywordSnapshot.analysis_run_id == run.id).all()
     )
     assert len(kw_records) >= 1
 

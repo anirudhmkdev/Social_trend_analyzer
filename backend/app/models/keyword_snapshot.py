@@ -26,16 +26,12 @@ class KeywordSnapshot(Base):
         nullable=False,
     )
     keyword: Mapped[str] = mapped_column(String(255), nullable=False)
-    keyword_type: Mapped[str] = mapped_column(
-        String(20), nullable=False
-    )  # keyword, hashtag, ngram
+    keyword_type: Mapped[str] = mapped_column(String(20), nullable=False)  # keyword, hashtag, ngram
     frequency: Mapped[int] = mapped_column(Integer, nullable=False)
     tfidf_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     growth_rate: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     time_window: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    window_start: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    window_start: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     topic_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("topics.id", ondelete="SET NULL"),

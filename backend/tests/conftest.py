@@ -60,4 +60,3 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
     with TestClient(fastapi_app) as test_client:
         yield test_client
     fastapi_app.dependency_overrides.clear()
-

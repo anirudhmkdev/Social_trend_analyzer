@@ -203,9 +203,7 @@ def _try_read_csv(content: bytes) -> Tuple[pd.DataFrame, str]:
             last_error = exc
             continue
 
-    raise ValueError(
-        f"Unable to parse CSV with encodings {encodings}. Last error: {last_error}"
-    )
+    raise ValueError(f"Unable to parse CSV with encodings {encodings}. Last error: {last_error}")
 
 
 def parse_csv(
@@ -240,9 +238,7 @@ def parse_csv(
     # --- Extension check ---
     ext = os.path.splitext(filename)[1].lower()
     if ext not in (".csv",):
-        raise ValueError(
-            f"Unsupported file extension '{ext}'. Only .csv files are accepted."
-        )
+        raise ValueError(f"Unsupported file extension '{ext}'. Only .csv files are accepted.")
 
     # --- Parse ---
     warnings: List[str] = []
@@ -261,9 +257,7 @@ def parse_csv(
     initial_rows = len(df)
     df = df.dropna(how="all")
     if len(df) < initial_rows:
-        warnings.append(
-            f"Dropped {initial_rows - len(df)} fully-empty rows from the CSV."
-        )
+        warnings.append(f"Dropped {initial_rows - len(df)} fully-empty rows from the CSV.")
 
     if len(df) == 0:
         raise ValueError("All rows in the CSV are empty.")

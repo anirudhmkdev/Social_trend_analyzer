@@ -25,9 +25,7 @@ class Dataset(Base):
     file_size_bytes: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     row_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     valid_row_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    column_mapping: Mapped[Optional[Dict[str, Any]]] = mapped_column(
-        PortableJSON, nullable=True
-    )
+    column_mapping: Mapped[Optional[Dict[str, Any]]] = mapped_column(PortableJSON, nullable=True)
     validation_results: Mapped[Optional[Dict[str, Any]]] = mapped_column(
         PortableJSON, nullable=True
     )

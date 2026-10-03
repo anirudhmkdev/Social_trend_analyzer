@@ -90,14 +90,46 @@ class SentimentAnalyzer:
         """Deterministic lexical fallback when transformers model is not downloaded/available."""
         lower = text.lower()
         pos_words = {
-            "great", "good", "breakthrough", "record", "growth", "positive",
-            "innovative", "success", "excited", "happy", "win", "improved",
-            "best", "love", "promising", "gain", "surging", "rising", "soar"
+            "great",
+            "good",
+            "breakthrough",
+            "record",
+            "growth",
+            "positive",
+            "innovative",
+            "success",
+            "excited",
+            "happy",
+            "win",
+            "improved",
+            "best",
+            "love",
+            "promising",
+            "gain",
+            "surging",
+            "rising",
+            "soar",
         }
         neg_words = {
-            "crash", "decline", "fall", "bad", "loss", "negative", "crisis",
-            "fail", "worst", "drop", "plunge", "danger", "warning", "risk",
-            "damage", "concern", "worse", "worsening", "threat"
+            "crash",
+            "decline",
+            "fall",
+            "bad",
+            "loss",
+            "negative",
+            "crisis",
+            "fail",
+            "worst",
+            "drop",
+            "plunge",
+            "danger",
+            "warning",
+            "risk",
+            "damage",
+            "concern",
+            "worse",
+            "worsening",
+            "threat",
         }
 
         tokens = set(lower.split())
@@ -135,9 +167,7 @@ class SentimentAnalyzer:
         """Predict sentiment for a single text string."""
         return self.predict_batch([text])[0]
 
-    def predict_batch(
-        self, texts: List[str], batch_size: int = 32
-    ) -> List[SentimentResultData]:
+    def predict_batch(self, texts: List[str], batch_size: int = 32) -> List[SentimentResultData]:
         """Perform batched sentiment inference."""
         if not texts:
             return []

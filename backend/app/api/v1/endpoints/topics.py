@@ -29,15 +29,12 @@ def get_topics(
 ) -> TopicListResponse:
     """List topics for an analysis run. If run_id not provided, uses latest completed run."""
     if analysis_run_id is None:
-        latest_run = (
-            db.execute(
-                select(AnalysisRun)
-                .where(AnalysisRun.status == "completed")
-                .order_by(AnalysisRun.completed_at.desc())
-                .limit(1)
-            )
-            .scalar_one_or_none()
-        )
+        latest_run = db.execute(
+            select(AnalysisRun)
+            .where(AnalysisRun.status == "completed")
+            .order_by(AnalysisRun.completed_at.desc())
+            .limit(1)
+        ).scalar_one_or_none()
         if not latest_run:
             return TopicListResponse(topics=[], total_topics=0, outlier_count=0)
         target_run_id = latest_run.id
@@ -103,17 +100,19 @@ def get_topic_detail(
         tot_comments += post.comments or 0
         tot_shares += post.shares or 0
 
-        posts_sample.append({
-            "id": str(post.id),
-            "original_text": post.original_text,
-            "timestamp": post.timestamp.isoformat(),
-            "platform": post.platform,
-            "sentiment": label,
-            "likes": post.likes,
-            "comments": post.comments,
-            "shares": post.shares,
-            "probability": pt.probability,
-        })
+        posts_sample.append(
+            {
+                "id": str(post.id),
+                "original_text": post.original_text,
+                "timestamp": post.timestamp.isoformat(),
+                "platform": post.platform,
+                "sentiment": label,
+                "likes": post.likes,
+                "comments": post.comments,
+                "shares": post.shares,
+                "probability": pt.probability,
+            }
+        )
 
     n = len(results) or 1
     sent_dist = {

@@ -62,7 +62,7 @@ class KeywordExtractor:
                     if w in vocab:
                         term_freqs[w] += 1
                 for i in range(len(words) - 1):
-                    bg = f"{words[i]} {words[i+1]}"
+                    bg = f"{words[i]} {words[i + 1]}"
                     if bg in vocab:
                         term_freqs[bg] += 1
 

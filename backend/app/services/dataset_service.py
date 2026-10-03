@@ -88,8 +88,7 @@ def upload_csv(
 
     # Build initial column_mapping dict from auto-detection
     detected_mapping = {
-        field: source_col
-        for field, source_col in parse_result.column_mapping.mappings.items()
+        field: source_col for field, source_col in parse_result.column_mapping.mappings.items()
     }
 
     dataset = Dataset(
@@ -117,11 +116,7 @@ def load_sample_dataset(db: Session) -> Dataset:
     Returns the created Dataset.
     """
     # Check if sample already exists
-    existing = (
-        db.query(Dataset)
-        .filter(Dataset.source_type == "synthetic_demo")
-        .first()
-    )
+    existing = db.query(Dataset).filter(Dataset.source_type == "synthetic_demo").first()
     if existing is not None:
         logger.info("Sample dataset already exists (id=%s)", existing.id)
         return existing
@@ -210,11 +205,7 @@ def list_datasets(db: Session, limit: int = 50, offset: int = 0) -> Tuple[List[D
     """List all datasets with pagination. Returns (datasets, total_count)."""
     total = db.query(Dataset).count()
     datasets = (
-        db.query(Dataset)
-        .order_by(Dataset.created_at.desc())
-        .limit(limit)
-        .offset(offset)
-        .all()
+        db.query(Dataset).order_by(Dataset.created_at.desc()).limit(limit).offset(offset).all()
     )
     return datasets, total
 
@@ -240,8 +231,15 @@ def get_dataset_preview(
     total_posts = db.query(Post).filter(Post.dataset_id == dataset_id).count()
 
     columns = [
-        "id", "original_text", "timestamp", "platform",
-        "hashtags", "likes", "comments", "shares", "is_duplicate",
+        "id",
+        "original_text",
+        "timestamp",
+        "platform",
+        "hashtags",
+        "likes",
+        "comments",
+        "shares",
+        "is_duplicate",
     ]
     rows = []
     for post in posts:

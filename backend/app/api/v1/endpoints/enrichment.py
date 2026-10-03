@@ -26,15 +26,12 @@ router = APIRouter(prefix="/enrichment", tags=["enrichment"])
 def _resolve_run_id(db: Session, run_id: Optional[uuid.UUID]) -> Optional[uuid.UUID]:
     if run_id is not None:
         return run_id
-    latest = (
-        db.execute(
-            select(AnalysisRun)
-            .where(AnalysisRun.status == "completed")
-            .order_by(AnalysisRun.completed_at.desc())
-            .limit(1)
-        )
-        .scalar_one_or_none()
-    )
+    latest = db.execute(
+        select(AnalysisRun)
+        .where(AnalysisRun.status == "completed")
+        .order_by(AnalysisRun.completed_at.desc())
+        .limit(1)
+    ).scalar_one_or_none()
     return latest.id if latest else None
 
 

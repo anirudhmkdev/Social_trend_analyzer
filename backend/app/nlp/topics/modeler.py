@@ -37,9 +37,7 @@ def generate_topic_name(keywords: List[Dict[str, Any]], topic_index: int) -> str
     if not keywords:
         return f"Topic {topic_index}"
 
-    top_words: List[str] = [
-        str(k["word"]).capitalize() for k in keywords[:3] if k.get("word")
-    ]
+    top_words: List[str] = [str(k["word"]).capitalize() for k in keywords[:3] if k.get("word")]
     if not top_words:
         return f"Topic {topic_index}"
 
@@ -101,10 +99,12 @@ class TopicModeler:
                 top_kw_idx = cluster_tfidf.argsort()[::-1][:10]
                 for idx in top_kw_idx:
                     if cluster_tfidf[idx] > 0:
-                        keywords.append({
-                            "word": str(feature_names[idx]),
-                            "score": round(float(cluster_tfidf[idx]), 4),
-                        })
+                        keywords.append(
+                            {
+                                "word": str(feature_names[idx]),
+                                "score": round(float(cluster_tfidf[idx]), 4),
+                            }
+                        )
 
             rep_docs = [documents[i] for i in indices[:5]]
             disp_name = generate_topic_name(keywords, cluster_id)
@@ -136,6 +136,7 @@ class TopicModeler:
 
         if embeddings is None:
             from app.nlp.topics.embedder import SentenceEmbedder
+
             embeddings = SentenceEmbedder.get_instance().encode(documents)
 
         # For small sample sizes (< 15) or when BERTopic cannot run HDBSCAN reliably
@@ -196,7 +197,7 @@ class TopicModeler:
             discovered: List[DiscoveredTopic] = []
 
             for topic_id in unique_topics:
-                is_outlier = (topic_id == -1)
+                is_outlier = topic_id == -1
                 indices = [i for i, t in enumerate(topic_labels) if t == topic_id]
                 topic_probs = [max_probs[i] for i in indices]
 

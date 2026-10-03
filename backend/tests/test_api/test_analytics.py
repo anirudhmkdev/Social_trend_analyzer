@@ -42,37 +42,37 @@ def test_dashboard_analytics_end_to_end(client: TestClient, db_session: Session)
     base_time = datetime(2026, 8, 1, 10, 0, 0, tzinfo=timezone.utc)
     posts = []
 
-    # Cluster 1: Machine Learning & NLP
-    for day in range(3):
+    # Cluster 1: Machine Learning & NLP (AI Breakthroughs, 20 posts)
+    for day, count in [(0, 2), (1, 6), (2, 12)]:
         cur_t = base_time + timedelta(days=day)
-        for i in range(4):
+        for i in range(count):
             posts.append(
                 Post(
                     dataset_id=ds.id,
-                    original_text=f"NLP transformers day {day} {i} #NLP #AI",
-                    cleaned_text=f"nlp transformers day {day} {i} nlp ai",
-                    sentiment_ready_text=f"NLP day {day} {i} #NLP",
-                    timestamp=cur_t + timedelta(hours=i * 2),
+                    original_text=f"AI and neural network breakthrough day {day} {i} #AI #Tech",
+                    cleaned_text=f"ai and neural network breakthrough day {day} {i} ai tech",
+                    sentiment_ready_text=f"AI breakthrough day {day} {i} #AI",
+                    timestamp=cur_t + timedelta(minutes=i * 15),
                     platform="twitter" if i % 2 == 0 else "reddit",
                     author_id=f"user_{i}",
                     likes=25 + i * 5,
                     comments=5 + i,
                     shares=3 + i,
-                    hashtags=["nlp", "ai"],
+                    hashtags=["ai", "tech"],
                 )
             )
 
-    # Cluster 2: Solar Renewable Energy
+    # Cluster 2: Solar Renewable Energy (12 posts)
     for day in range(3):
         cur_t = base_time + timedelta(days=day)
         for i in range(4):
             posts.append(
                 Post(
                     dataset_id=ds.id,
-                    original_text=f"Solar energy panels day {day} {i} #Solar",
-                    cleaned_text=f"solar energy panels day {day} {i} solar",
-                    sentiment_ready_text=f"Solar energy day {day} {i} #Solar",
-                    timestamp=cur_t + timedelta(hours=i * 2),
+                    original_text=f"Solar energy panels and green power day {day} {i} #Solar",
+                    cleaned_text=f"solar energy panels and green power day {day} {i} solar",
+                    sentiment_ready_text=f"Solar energy panels day {day} {i} #Solar",
+                    timestamp=cur_t + timedelta(minutes=i * 15),
                     platform="twitter",
                     author_id=f"solar_user_{i}",
                     likes=15 + i * 2,
@@ -129,11 +129,11 @@ def test_dashboard_analytics_end_to_end(client: TestClient, db_session: Session)
 
     # 6. Test GET /api/v1/posts/search
     # a. Text search
-    s_res = client.get(f"/api/v1/posts/search?dataset_id={ds.id}&q=transformers")
+    s_res = client.get(f"/api/v1/posts/search?dataset_id={ds.id}&q=breakthrough")
     assert s_res.status_code == 200
     s_data = s_res.json()
     assert s_data["total"] > 0
-    assert all("transformers" in p["original_text"].lower() for p in s_data["items"])
+    assert all("breakthrough" in p["original_text"].lower() for p in s_data["items"])
 
     # b. Platform filter
     plat_res = client.get(f"/api/v1/posts/search?dataset_id={ds.id}&platform=reddit")
