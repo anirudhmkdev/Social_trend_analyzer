@@ -1,284 +1,141 @@
-/**
- * Social Trend Analyzer — Typed API Client
- */
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-export interface HealthCheckResponse {
-  status: string;
+/** Parallel contracts for the Pydantic v1 API. Integration tests check real responses. */
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+export type WindowSize = "hourly" | "daily" | "weekly";
+export type Classification = "emerging" | "rising" | "stable" | "declining";
+export type Sentiment = "positive" | "neutral" | "negative";
+export type ColumnField = "text" | "timestamp" | "platform" | "hashtags" | "likes" | "comments" | "shares" | "author_id" | "external_id";
+export type ColumnMapping = Record<ColumnField, string | null>;
+export interface ValidationResult {
+  total_rows: number; valid_rows: number; invalid_rows: number;
+  issues: { missing_text: number; missing_timestamp: number; invalid_timestamp: number; duplicate_posts: number };
+  date_range: { earliest: string | null; latest: string | null };
+  platform_distribution: Record<string, number>; missing_field_counts: Record<string, number>;
+  row_issues: Array<{ row_index: number; issue_type: string; detail: string }>;
+  issues_truncated: boolean;
 }
-
-export interface TrendSnapshot {
-  id: string;
-  topic_id: string;
-  topic_name?: string;
-  time_window: string;
-  window_start: string;
-  window_end: string;
-  trend_score: number;
-  classification: "emerging" | "rising" | "stable" | "declining";
-  explanation: string;
-  volume_current: number;
-  volume_previous: number;
-  volume_growth_pct?: number;
-  engagement_current?: number;
-  engagement_previous?: number;
-  engagement_growth_pct?: number;
-  velocity?: number;
-  burst_score?: number;
-  recency_score?: number;
-  sentiment_positive_pct?: number;
-  sentiment_neutral_pct?: number;
-  sentiment_negative_pct?: number;
-}
-
-export interface DashboardSummary {
-  analysis_run_id?: string;
-  dataset_id?: string;
-  dataset_name?: string;
-  status: string;
-  total_posts: number;
-  total_topics: number;
-  sentiment_breakdown: {
-    counts: { positive: number; neutral: number; negative: number };
-    percentages: { positive: number; neutral: number; negative: number };
-    total: number;
-  };
-  trend_classifications: {
-    emerging: number;
-    rising: number;
-    stable: number;
-    declining: number;
-  };
-  top_trends: TrendSnapshot[];
-  top_entities: Array<{ text: string; label: string; frequency: number }>;
-  top_hashtags: Array<{ keyword: string; frequency: number; growth_rate?: number }>;
-  top_keywords: Array<{ keyword: string; frequency: number; tfidf_score: number }>;
-  platform_breakdown: Record<string, number>;
-  model_info: Record<string, unknown>;
-}
-
-export interface TimelinePoint {
-  window_start: string;
-  window_end: string;
-  total_volume: number;
-  positive_count: number;
-  neutral_count: number;
-  negative_count: number;
-  avg_engagement: number;
-}
-
-export interface TimelineResponse {
-  time_window: string;
-  timeline: TimelinePoint[];
-  total_points: number;
-}
-
-export interface TopicItem {
-  id: string;
-  topic_index: number;
-  display_name: string;
-  keywords: Array<{ word: string; score: number }>;
-  representative_docs: string[];
-  post_count: number;
-  is_outlier: boolean;
-  sentiment_distribution?: Record<string, number>;
-  avg_engagement?: number;
-  trend_score?: number;
-  trend_classification?: string;
-}
-
-export interface TopicDetailResponse {
-  topic: TopicItem;
-  sentiment_distribution: Record<string, number>;
-  avg_engagement: number;
-  sample_posts: Array<{
-    id: string;
-    text: string;
-    timestamp: string;
-    platform?: string;
-    likes?: number;
-  }>;
-}
-
 export interface DatasetItem {
-  id: string;
-  name: string;
-  filename: string;
-  source_type: string;
-  row_count?: number;
-  valid_row_count?: number;
-  status: string;
-  created_at: string;
-  latest_run?: {
-    id: string;
-    status: string;
-    completed_at?: string;
-  };
+  id: string; name: string; filename: string; source_type: string;
+  row_count: number | null; valid_row_count: number | null; status: string;
+  column_mapping: ColumnMapping | null; validation_results: ValidationResult | null;
+  upload_metadata: { encoding: string; warnings: string[]; ambiguous_fields: string[] } | null;
+  created_at: string; updated_at: string;
 }
-
+export interface DatasetListResponse { datasets: DatasetItem[]; total: number }
+export interface DatasetPreview {
+  dataset_id: string; columns: string[]; rows: Array<Record<string, unknown>>;
+  total_rows: number; shown_rows: number; kind: "raw" | "normalized"; warnings: string[];
+  detection: null | { available_columns: string[]; ambiguous_fields: string[];
+    detected: Record<ColumnField, { source_column: string | null; confidence: number }> };
+}
+export interface AnalysisRun {
+  id: string; dataset_id: string; status: "pending" | "running" | "completed" | "failed";
+  progress_pct: number; current_step: string | null; error_message: string | null;
+  created_at: string; started_at: string | null; completed_at: string | null;
+  config: Record<string, unknown>; model_info: Record<string, unknown> | null; stats: Record<string, unknown> | null;
+}
+export interface TrendSnapshot {
+  id: string; analysis_run_id: string; topic_id: string; topic_name: string | null;
+  time_window: string; window_start: string; window_end: string;
+  trend_score: number; classification: Classification; explanation: string;
+  volume_current: number; volume_previous: number; volume_growth_pct: number | null;
+  engagement_current: number | null; engagement_previous: number | null; engagement_growth_pct: number | null;
+  velocity: number | null; burst_score: number | null; recency_score: number | null;
+  sentiment_positive_pct: number | null; sentiment_neutral_pct: number | null; sentiment_negative_pct: number | null;
+  activity: number[]; min_posts_for_trend: number;
+}
+export interface TimelinePoint {
+  window_start: string; window_end: string; total_volume: number;
+  positive_count: number; neutral_count: number; negative_count: number; avg_engagement: number;
+}
+export interface TimelineResponse { time_window: string; timeline: TimelinePoint[]; total_points: number }
+export interface EntityItem { text: string; label: string; frequency: number }
+export interface KeywordItem { keyword: string; frequency: number; tfidf_score?: number | null; growth_rate?: number | null }
+export interface DashboardSummary {
+  analysis_run_id: string | null; dataset_id: string | null; dataset_name: string | null; status: string;
+  total_posts: number; total_topics: number;
+  sentiment_breakdown: { counts: Record<Sentiment, number>; percentages: Record<Sentiment, number>; total: number };
+  trend_classifications: Record<Classification, number>; top_trends: TrendSnapshot[];
+  top_entities: EntityItem[]; top_hashtags: KeywordItem[]; top_keywords: KeywordItem[];
+  platform_breakdown: Record<string, number>; model_info: Record<string, unknown>;
+}
+export interface TopicItem {
+  id: string; analysis_run_id: string; topic_index: number; display_name: string;
+  keywords: Array<{ word: string; score: number }>; representative_docs: string[] | null;
+  model_metadata: Record<string, unknown> | null; post_count: number; is_outlier: boolean;
+  latest_trend: TrendSnapshot | null;
+}
 export interface PostItem {
-  id: string;
-  dataset_id: string;
-  original_text: string;
-  cleaned_text?: string;
-  sentiment_ready_text?: string;
-  timestamp: string;
-  platform?: string;
-  author_id?: string;
-  likes?: number;
-  comments?: number;
-  shares?: number;
-  hashtags?: string[];
-  sentiment?: string;
-  topic_name?: string;
+  id: string; dataset_id: string; original_text: string; cleaned_text?: string | null;
+  timestamp: string; platform: string | null; likes: number | null; comments: number | null; shares: number | null;
+  hashtags?: string[] | null; sentiment: Sentiment | null; topic_name?: string | null; probability?: number | null;
 }
-
-export interface PostSearchResponse {
-  items: PostItem[];
-  total: number;
-  limit: number;
-  offset: number;
+export interface PostSearchResponse { items: PostItem[]; total: number; limit: number; offset: number }
+export interface TopicDetailResponse {
+  topic: TopicItem; dataset_id: string; sentiment_distribution: Record<Sentiment, number>;
+  avg_engagement: Record<"likes" | "comments" | "shares", number | null>; sample_posts: PostItem[];
+  entities: EntityItem[]; keywords: KeywordItem[]; hashtags: KeywordItem[];
+  trend_history: TrendSnapshot[]; timeline: TimelinePoint[];
 }
-
 export interface PipelineMetadata {
-  preprocessing_version: string;
-  embedding_model: string;
-  embedding_dimensions: number;
-  sentiment_model: string;
-  sentiment_license: string;
-  ner_model: string;
-  topic_model: string;
-  trend_weights: Record<string, number>;
-  trend_thresholds: Record<string, number>;
-  active_run?: {
-    id: string;
-    dataset_id: string;
-    status: string;
-    current_step: string;
-    progress_pct: number;
-    started_at?: string;
-  };
-  database_backend: string;
+  preprocessing_version: string; embedding_model: string; embedding_dimensions: number;
+  sentiment_model: string; sentiment_license: string; ner_model: string; topic_model: string;
+  trend_weights: Record<string, number>; trend_thresholds: Record<string, number>; min_posts_for_trend: number;
+  active_run: { id: string; dataset_id: string; status: string; current_step: string; progress_pct: number } | null;
+  database_backend: string; package_versions: Record<string, string>; run_model_info: Record<string, unknown>;
+  run_stats: Record<string, unknown>; ner_status: { model?: string; status?: string; warning?: string | null };
 }
-
 export class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-    public data?: unknown
-  ) {
-    super(message);
-    this.name = "ApiError";
+  constructor(public status: number, message: string, public data?: unknown) { super(message); this.name = "ApiError"; }
+}
+function serverError(data: unknown): string | undefined {
+  if (!data || typeof data !== "object") return;
+  if ("error" in data && typeof data.error === "string") return data.error;
+  if ("detail" in data) {
+    if (typeof data.detail === "string") return data.detail;
+    if (Array.isArray(data.detail)) return data.detail.map(item => item.msg || "Invalid input").join("; ");
   }
 }
-
-async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const url = `${API_BASE_URL.replace(/\/+$/, "")}/${endpoint.replace(/^\/+/, "")}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options?.headers || {}),
-    },
-  });
-
+export async function fetchJson<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL.replace(/\/+$/, "")}/${endpoint.replace(/^\/+/, "")}`, {
+      ...options, headers: { ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...options.headers },
+      signal: options.signal || AbortSignal.timeout(30000),
+    });
+  } catch {
+    throw new ApiError(0, "API unavailable. Start the backend, check its address, and try again.");
+  }
   if (!response.ok) {
-    let errorData: unknown;
-    try {
-      errorData = await response.json();
-    } catch {
-      errorData = null;
-    }
-    throw new ApiError(
-      response.status,
-      `API request failed with status ${response.status}`,
-      errorData
-    );
+    const data: unknown = await response.json().catch(() => null);
+    throw new ApiError(response.status, serverError(data) || `Request failed (${response.status}). Try again.`, data);
   }
-
-  return response.json() as Promise<T>;
+  if (response.status === 204) return undefined as T;
+  return response.json();
 }
-
+function params(values: object): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(values)) if (value !== undefined && value !== "") query.set(key, String(value));
+  return query.toString();
+}
+export interface ReadContext { dataset_id?: string; analysis_run_id?: string; time_window?: WindowSize; platform?: string }
 export const api = {
-  getHealth: () => fetchJson<HealthCheckResponse>("/health"),
-
-  // Dashboard & Timeline
-  getDashboardSummary: (analysisRunId?: string) =>
-    fetchJson<DashboardSummary>(
-      `/dashboard/summary${analysisRunId ? `?analysis_run_id=${analysisRunId}` : ""}`
-    ),
-
-  getTimeline: (analysisRunId?: string, topicId?: string, timeWindow: string = "daily") => {
-    const params = new URLSearchParams({ time_window: timeWindow });
-    if (analysisRunId) params.append("analysis_run_id", analysisRunId);
-    if (topicId) params.append("topic_id", topicId);
-    return fetchJson<TimelineResponse>(`/dashboard/timeline?${params.toString()}`);
-  },
-
-  // Trends
-  getTrends: (analysisRunId?: string, classification?: string, timeWindow: string = "daily") => {
-    const params = new URLSearchParams({ time_window: timeWindow });
-    if (analysisRunId) params.append("analysis_run_id", analysisRunId);
-    if (classification) params.append("classification", classification);
-    return fetchJson<{ trends: TrendSnapshot[]; total: number; emerging_count: number; rising_count: number; stable_count: number; declining_count: number }>(
-      `/trends?${params.toString()}`
-    );
-  },
-
-  getTopicTrendHistory: (topicId: string, timeWindow: string = "daily") =>
-    fetchJson<TrendSnapshot[]>(`/trends/topic/${topicId}?time_window=${timeWindow}`),
-
-  // Topics
-  getTopics: (analysisRunId?: string) =>
-    fetchJson<{ topics: TopicItem[]; total: number }>(
-      `/topics${analysisRunId ? `?analysis_run_id=${analysisRunId}` : ""}`
-    ),
-
-  getTopicDetail: (topicId: string) =>
-    fetchJson<TopicDetailResponse>(`/topics/${topicId}`),
-
-  // Datasets & Runs
-  getDatasets: () => fetchJson<DatasetItem[]>("/datasets"),
-
-  loadSampleDataset: () =>
-    fetchJson<{ message: string; dataset_id: string; row_count: number }>("/datasets/sample", {
-      method: "POST",
-    }),
-
-  triggerAnalysisRun: (datasetId: string) =>
-    fetchJson<{ id: string; status: string; dataset_id: string }>("/analysis/run", {
-      method: "POST",
-      body: JSON.stringify({ dataset_id: datasetId }),
-    }),
-
-  getAnalysisRunStatus: (runId: string) =>
-    fetchJson<{ id: string; status: string; progress_pct: number; current_step: string; error_message?: string }>(
-      `/analysis/${runId}/status`
-    ),
-
-  // Posts Search
-  searchPosts: (params: {
-    datasetId?: string;
-    q?: string;
-    sentiment?: string;
-    platform?: string;
-    topicId?: string;
-    limit?: number;
-    offset?: number;
-  }) => {
-    const qp = new URLSearchParams();
-    if (params.datasetId) qp.append("dataset_id", params.datasetId);
-    if (params.q) qp.append("q", params.q);
-    if (params.sentiment) qp.append("sentiment", params.sentiment);
-    if (params.platform) qp.append("platform", params.platform);
-    if (params.topicId) qp.append("topic_id", params.topicId);
-    if (params.limit) qp.append("limit", params.limit.toString());
-    if (params.offset) qp.append("offset", params.offset.toString());
-    return fetchJson<PostSearchResponse>(`/posts/search?${qp.toString()}`);
-  },
-
-  // Pipeline Metadata
-  getPipelineMetadata: () => fetchJson<PipelineMetadata>("/pipeline/metadata"),
+  getHealth: () => fetchJson<{ status: string }>("/health"),
+  getDatasets: (offset = 0) => fetchJson<DatasetListResponse>(`/datasets?limit=200&offset=${offset}`),
+  getDataset: (id: string) => fetchJson<DatasetItem>(`/datasets/${id}`),
+  uploadDataset: (file: File) => { const body = new FormData(); body.set("file", file); return fetchJson<DatasetItem>("/datasets/upload", { method: "POST", body }); },
+  getPreview: (id: string) => fetchJson<DatasetPreview>(`/datasets/${id}/preview`),
+  mapColumns: (id: string, mapping: ColumnMapping) => fetchJson<DatasetItem>(`/datasets/${id}/map-columns`, { method: "POST", body: JSON.stringify(mapping) }),
+  validateDataset: (id: string) => fetchJson<ValidationResult>(`/datasets/${id}/validate`, { method: "POST" }),
+  importDataset: (id: string) => fetchJson<DatasetItem>(`/datasets/${id}/import`, { method: "POST" }),
+  deleteDataset: (id: string) => fetchJson<void>(`/datasets/${id}`, { method: "DELETE" }),
+  loadSampleDataset: () => fetchJson<{ dataset_id: string; row_count: number; name: string; message: string }>("/datasets/sample", { method: "POST" }),
+  getAnalysisRuns: (id: string) => fetchJson<{ runs: AnalysisRun[]; total: number }>(`/analysis?dataset_id=${id}`),
+  triggerAnalysisRun: (id: string) => fetchJson<AnalysisRun>("/analysis/run", { method: "POST", body: JSON.stringify({ dataset_id: id }) }),
+  getAnalysisRunStatus: (id: string) => fetchJson<AnalysisRun>(`/analysis/${id}/status`),
+  getDashboardSummary: (context: ReadContext) => fetchJson<DashboardSummary>(`/dashboard/summary?${params(context)}`),
+  getTimeline: (context: ReadContext, topicId?: string) => fetchJson<TimelineResponse>(`/dashboard/timeline?${params({ ...context, topic_id: topicId })}`),
+  getTopics: (context: ReadContext, classification?: string, q?: string) => fetchJson<{ topics: TopicItem[]; total_topics: number; outlier_count: number }>(`/topics?${params({ ...context, classification, q })}`),
+  getTopicDetail: (id: string, runId?: string, context: ReadContext = {}) => fetchJson<TopicDetailResponse>(`/topics/${id}?${params({ ...context, analysis_run_id: runId })}`),
+  searchPosts: (query: ReadContext & { q?: string; sentiment?: string; topic_id?: string; date_from?: string; date_to?: string; limit?: number; offset?: number }) => fetchJson<PostSearchResponse>(`/posts/search?${params(query)}`),
+  getPipelineMetadata: (runId?: string) => fetchJson<PipelineMetadata>(`/pipeline/metadata?${params({ analysis_run_id: runId })}`),
 };
