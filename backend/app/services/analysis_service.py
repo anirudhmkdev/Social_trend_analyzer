@@ -19,6 +19,7 @@ from app.models.keyword_snapshot import KeywordSnapshot
 from app.models.post import Post
 from app.models.sentiment_result import SentimentResult
 from app.models.topic import PostTopic, Topic
+from app.models.trend_snapshot import TrendSnapshot
 from app.nlp.enrichment.keywords import KeywordExtractor
 from app.nlp.enrichment.ner import NER_MODEL_NAME, EntityRecognizer
 from app.nlp.preprocessing.cleaner import PREPROCESSING_VERSION
@@ -35,6 +36,8 @@ from app.nlp.topics.embedder import (
     SentenceEmbedder,
 )
 from app.nlp.topics.modeler import TopicModeler
+from app.nlp.trends.config import TrendConfig
+from app.nlp.trends.engine import TrendEngine
 
 logger = logging.getLogger(__name__)
 
@@ -105,9 +108,7 @@ def get_analysis_run(db: Session, run_id: uuid.UUID) -> AnalysisRun:
     return run
 
 
-def list_analysis_runs(
-    db: Session, dataset_id: Optional[uuid.UUID] = None
-) -> List[AnalysisRun]:
+def list_analysis_runs(db: Session, dataset_id: Optional[uuid.UUID] = None) -> List[AnalysisRun]:
     """List analysis runs optionally filtered by dataset."""
     stmt = select(AnalysisRun).order_by(desc(AnalysisRun.created_at))
     if dataset_id:
@@ -115,9 +116,7 @@ def list_analysis_runs(
     return list(db.execute(stmt).scalars().all())
 
 
-def execute_analysis_run(
-    run_id: uuid.UUID, db_session: Optional[Session] = None
-) -> None:
+def execute_analysis_run(run_id: uuid.UUID, db_session: Optional[Session] = None) -> None:
     """Synchronous pipeline worker function to run as background task or in tests."""
     should_close = False
     if db_session is not None:
@@ -145,11 +144,13 @@ def execute_analysis_run(
         db.commit()
 
         # Step 2: Sentiment Analysis
-        posts = db.execute(
-            select(Post)
-            .where(Post.dataset_id == run.dataset_id)
-            .order_by(Post.timestamp.asc())
-        ).scalars().all()
+        posts = (
+            db.execute(
+                select(Post).where(Post.dataset_id == run.dataset_id).order_by(Post.timestamp.asc())
+            )
+            .scalars()
+            .all()
+        )
 
         if not posts:
             run.status = "completed"
@@ -281,6 +282,7 @@ def execute_analysis_run(
 
         # Aggregate unique entities: key = (normalized_text, label)
         from collections import defaultdict
+
         entity_freqs: Dict[Tuple[str, str], int] = defaultdict(int)
         entity_display: Dict[Tuple[str, str], str] = {}
         for doc_ents in extracted_by_post:
@@ -367,12 +369,119 @@ def execute_analysis_run(
             "total_hashtags": len(hashtag_items),
         }
 
+        # Step 5: Trend Detection Engine
+        run.progress_pct = 85
+        run.current_step = "Trend Detection"
+        db.commit()
+
+        dataset = db.execute(
+            select(Dataset).where(Dataset.id == run.dataset_id)
+        ).scalar_one_or_none()
+        has_engagement = False
+        if dataset and dataset.column_mapping:
+            if any(
+                k in dataset.column_mapping for k in ("likes", "shares", "comments", "engagement")
+            ):
+                has_engagement = True
+        if not has_engagement:
+            if any(
+                p.likes is not None or p.shares is not None or p.comments is not None for p in posts
+            ):
+                has_engagement = True
+
+        trend_config = TrendConfig()
+        trend_engine = TrendEngine(config=trend_config)
+        dataset_max_time = max(
+            (p.timestamp for p in posts if p.timestamp is not None),
+            default=datetime.now(timezone.utc),
+        )
+        if dataset_max_time.tzinfo is None:
+            dataset_max_time = dataset_max_time.replace(tzinfo=timezone.utc)
+
+        post_sentiment_map = {post.id: pred.label for post, pred in zip(posts, predictions)}
+        trend_snapshot_objects: List[TrendSnapshot] = []
+
+        for topic_rec in topic_objects:
+            if topic_rec.is_outlier:
+                continue
+
+            topic_post_indices = [
+                i for i, label in enumerate(topic_labels) if label == topic_rec.topic_index
+            ]
+            topic_posts_data = []
+            for idx in topic_post_indices:
+                p = posts[idx]
+                topic_posts_data.append(
+                    {
+                        "timestamp": p.timestamp,
+                        "likes": p.likes,
+                        "comments": p.comments,
+                        "shares": p.shares,
+                        "sentiment": post_sentiment_map.get(p.id, "neutral"),
+                    }
+                )
+
+            computed_snapshots = trend_engine.analyze_topic(
+                topic_id=topic_rec.id,
+                posts_data=topic_posts_data,
+                now_utc=dataset_max_time,
+                has_engagement=has_engagement,
+            )
+
+            for cs in computed_snapshots:
+                ts_rec = TrendSnapshot(
+                    analysis_run_id=run.id,
+                    topic_id=cs.topic_id,
+                    time_window=cs.time_window,
+                    window_start=cs.window_start,
+                    window_end=cs.window_end,
+                    trend_score=cs.trend_score,
+                    classification=cs.classification,
+                    explanation=cs.explanation,
+                    volume_current=cs.volume_current,
+                    volume_previous=cs.volume_previous,
+                    volume_growth_pct=cs.volume_growth_pct,
+                    engagement_current=cs.engagement_current,
+                    engagement_previous=cs.engagement_previous,
+                    engagement_growth_pct=cs.engagement_growth_pct,
+                    velocity=cs.velocity,
+                    burst_score=cs.burst_score,
+                    recency_score=cs.recency_score,
+                    sentiment_positive_pct=cs.sentiment_positive_pct,
+                    sentiment_neutral_pct=cs.sentiment_neutral_pct,
+                    sentiment_negative_pct=cs.sentiment_negative_pct,
+                    created_at=datetime.now(timezone.utc),
+                )
+                trend_snapshot_objects.append(ts_rec)
+
+        db.add_all(trend_snapshot_objects)
+        db.commit()
+
+        trend_classification_counts = {
+            "emerging": sum(1 for s in trend_snapshot_objects if s.classification == "emerging"),
+            "rising": sum(1 for s in trend_snapshot_objects if s.classification == "rising"),
+            "stable": sum(1 for s in trend_snapshot_objects if s.classification == "stable"),
+            "declining": sum(1 for s in trend_snapshot_objects if s.classification == "declining"),
+        }
+
+        trends_stats = {
+            "total_snapshots": len(trend_snapshot_objects),
+            "topics_evaluated": len([t for t in topic_objects if not t.is_outlier]),
+            "classifications": trend_classification_counts,
+        }
+
         run.model_info = {
             **(run.model_info or {}),
             "embedding_model": EMBEDDING_MODEL_NAME,
             "embedding_dimensions": EMBEDDING_DIMENSIONS,
             "topic_model": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
             "ner_model": NER_MODEL_NAME,
+            "trend_weights": {
+                "volume": trend_config.weight_volume,
+                "engagement": trend_config.weight_engagement,
+                "velocity": trend_config.weight_velocity,
+                "burstiness": trend_config.weight_burstiness,
+            },
         }
 
         run.stats = {
@@ -381,13 +490,14 @@ def execute_analysis_run(
             "sentiment": sentiment_stats,
             "topics": topics_stats,
             "enrichment": enrichment_stats,
+            "trends": trends_stats,
         }
         run.progress_pct = 100
         run.status = "completed"
         run.completed_at = datetime.now(timezone.utc)
         run.current_step = "Completed"
         db.commit()
-        logger.info("AnalysisRun %s completed successfully.", run_id)
+        logger.info("AnalysisRun %s completed successfully with trends.", run_id)
 
     except Exception as exc:
         logger.exception("Error executing AnalysisRun %s: %s", run_id, exc)
