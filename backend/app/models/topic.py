@@ -42,6 +42,7 @@ class Topic(Base):
         PortableJSON, nullable=False, default=list
     )  # [{"word": str, "score": float}]
     representative_docs: Mapped[Optional[List[str]]] = mapped_column(PortableJSON, nullable=True)
+    model_metadata: Mapped[Optional[Dict[str, Any]]] = mapped_column(PortableJSON, nullable=True)
     post_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     is_outlier: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(

@@ -1,6 +1,7 @@
 """API route handlers for dashboard analytics, timelines, posts search, and pipeline metadata."""
 
 import uuid
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -28,15 +29,20 @@ pipeline_router = APIRouter(prefix="/pipeline", tags=["Pipeline"])
 @dashboard_router.get("/summary", response_model=DashboardSummaryResponse)
 def get_summary(
     analysis_run_id: Optional[uuid.UUID] = None,
+    dataset_id: Optional[uuid.UUID] = None,
+    time_window: str = Query("daily", pattern="^(hourly|daily|weekly)$"),
+    platform: Optional[str] = None,
     db: Session = Depends(get_db),
 ) -> DashboardSummaryResponse:
     """Retrieve unified summary metrics, top trends, entities, and keyword insights."""
-    return get_dashboard_summary(db=db, run_id=analysis_run_id)
+    return get_dashboard_summary(db, analysis_run_id, dataset_id, time_window, platform)
 
 
 @dashboard_router.get("/timeline", response_model=DashboardTimelineResponse)
 def get_timeline_data(
     analysis_run_id: Optional[uuid.UUID] = None,
+    dataset_id: Optional[uuid.UUID] = None,
+    platform: Optional[str] = None,
     topic_id: Optional[uuid.UUID] = None,
     time_window: str = Query("daily", pattern="^(hourly|daily|weekly)$"),
     db: Session = Depends(get_db),
@@ -47,12 +53,17 @@ def get_timeline_data(
         run_id=analysis_run_id,
         topic_id=topic_id,
         time_window=time_window,
+        dataset_id=dataset_id,
+        platform=platform,
     )
 
 
 @posts_router.get("/search", response_model=PostSearchResponse)
 def search_posts_endpoint(
     dataset_id: Optional[uuid.UUID] = None,
+    analysis_run_id: Optional[uuid.UUID] = None,
+    date_from: Optional[datetime] = None,
+    date_to: Optional[datetime] = None,
     q: Optional[str] = Query(None, description="Search text in original or cleaned text"),
     sentiment: Optional[str] = Query(None, pattern="^(positive|neutral|negative)$"),
     platform: Optional[str] = Query(None, description="Social platform name"),
@@ -71,12 +82,16 @@ def search_posts_endpoint(
         topic_id=topic_id,
         limit=limit,
         offset=offset,
+        run_id=analysis_run_id,
+        date_from=date_from,
+        date_to=date_to,
     )
 
 
 @pipeline_router.get("/metadata", response_model=PipelineMetadataResponse)
 def get_metadata(
+    analysis_run_id: Optional[uuid.UUID] = None,
     db: Session = Depends(get_db),
 ) -> PipelineMetadataResponse:
     """Retrieve system-level pipeline architecture, active models, licenses, and trend settings."""
-    return get_pipeline_metadata(db=db)
+    return get_pipeline_metadata(db=db, run_id=analysis_run_id)

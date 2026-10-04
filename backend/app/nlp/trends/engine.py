@@ -73,7 +73,7 @@ class TrendEngine:
             now_utc = datetime.now(timezone.utc)
 
         # Step 1: Group posts into UTC windows
-        windows_map = self.aggregator.group_posts_by_window(posts_data)
+        windows_map = self.aggregator.group_posts_by_window(posts_data, end_time=now_utc)
 
         # Step 2: Metrics per window
         window_starts = list(windows_map.keys())
@@ -98,6 +98,7 @@ class TrendEngine:
 
         snapshots: List[ComputedTrendSnapshot] = []
 
+        latest_observed = min(p["timestamp"] for p in posts_data)
         for window_rec in trajectory:
             w_start = window_rec["window_start"]
             w_end = window_rec["window_end"]
@@ -122,7 +123,8 @@ class TrendEngine:
                 config=self.config,
             )
 
-            latest_post_time = window_rec.get("latest_post_time") or w_end
+            latest_post_time = window_rec.get("latest_post_time") or latest_observed
+            latest_observed = latest_post_time
             recency = compute_recency(
                 latest_post_time_utc=latest_post_time,
                 now_utc=now_utc,
@@ -141,6 +143,11 @@ class TrendEngine:
             )
 
             explanation = generate_explanation(window_rec)
+            if window_rec["volume"] < self.config.min_posts_for_trend:
+                explanation = (
+                    f"Stable — insufficient current volume ({window_rec['volume']} < "
+                    f"{self.config.min_posts_for_trend}). " + explanation
+                )
 
             snap = ComputedTrendSnapshot(
                 topic_id=topic_id,

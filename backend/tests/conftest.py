@@ -37,19 +37,29 @@ def setup_test_db():
 
 @pytest.fixture()
 def db_session() -> Generator[Session, None, None]:
-    connection = test_engine.connect()
-    transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
+    Base.metadata.create_all(bind=test_engine)
+    session = TestingSessionLocal()
     try:
         yield session
     finally:
         session.close()
-        transaction.rollback()
-        connection.close()
+        Base.metadata.drop_all(bind=test_engine)
 
 
 @pytest.fixture()
-def client(db_session: Session) -> Generator[TestClient, None, None]:
+def client(db_session: Session, monkeypatch) -> Generator[TestClient, None, None]:
+    import app.main as main_module
+    from app.api.v1.endpoints import analysis
+    from app.services.analysis_service import execute_analysis_run
+
+    # Background tasks use the same isolated transaction as the HTTP request.
+    monkeypatch.setattr(main_module, "SessionLocal", TestingSessionLocal)
+    monkeypatch.setattr(
+        analysis,
+        "execute_analysis_run",
+        lambda run_id: execute_analysis_run(run_id, db_session=db_session),
+    )
+
     def override_get_db():
         try:
             yield db_session
@@ -60,3 +70,17 @@ def client(db_session: Session) -> Generator[TestClient, None, None]:
     with TestClient(fastapi_app) as test_client:
         yield test_client
     fastapi_app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def isolated_inference_and_uploads(monkeypatch, tmp_path):
+    from app.config import settings
+    from app.nlp.enrichment.ner import EntityRecognizer
+    from app.nlp.sentiment.classifier import SentimentAnalyzer
+    from app.nlp.topics.embedder import SentenceEmbedder
+    from tests.model_fixtures import install_model_fixtures
+
+    for cls in [EntityRecognizer, SentimentAnalyzer, SentenceEmbedder]:
+        monkeypatch.setattr(cls, "_instance", None)
+    install_model_fixtures()
+    monkeypatch.setattr(settings, "UPLOAD_DIR", str(tmp_path))

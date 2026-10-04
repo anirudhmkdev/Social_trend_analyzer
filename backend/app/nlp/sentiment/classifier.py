@@ -34,7 +34,7 @@ class SentimentAnalyzer:
     """Lazy-loaded Twitter-RoBERTa sentiment classifier."""
 
     _instance: Optional["SentimentAnalyzer"] = None
-    _pipeline = None
+    _pipeline: Any = None
 
     def __init__(self, model_name: str = SENTIMENT_MODEL_NAME):
         self.model_name = model_name
@@ -51,14 +51,6 @@ class SentimentAnalyzer:
     def load_model(self) -> None:
         """Lazily load the HuggingFace pipeline on CPU and cache in memory."""
         if self._is_loaded and self._pipeline is not None:
-            return
-
-        import os
-
-        # Fast path during automated testing to avoid 500MB HuggingFace download block
-        if os.environ.get("PYTEST_CURRENT_TEST") and not os.environ.get("LOAD_FULL_HF_MODEL"):
-            self._is_loaded = True
-            self._pipeline = None
             return
 
         logger.info("Loading sentiment model: %s on CPU...", self.model_name)
@@ -78,94 +70,23 @@ class SentimentAnalyzer:
             self._is_loaded = True
             logger.info("Sentiment model %s loaded successfully.", self.model_name)
         except Exception as exc:
-            logger.warning(
-                "Could not load HuggingFace pipeline for %s: %s. Using heuristic fallback.",
-                self.model_name,
-                exc,
-            )
-            self._is_loaded = True
-            self._pipeline = None
-
-    def _heuristic_predict(self, text: str) -> SentimentResultData:
-        """Deterministic lexical fallback when transformers model is not downloaded/available."""
-        lower = text.lower()
-        pos_words = {
-            "great",
-            "good",
-            "breakthrough",
-            "record",
-            "growth",
-            "positive",
-            "innovative",
-            "success",
-            "excited",
-            "happy",
-            "win",
-            "improved",
-            "best",
-            "love",
-            "promising",
-            "gain",
-            "surging",
-            "rising",
-            "soar",
-        }
-        neg_words = {
-            "crash",
-            "decline",
-            "fall",
-            "bad",
-            "loss",
-            "negative",
-            "crisis",
-            "fail",
-            "worst",
-            "drop",
-            "plunge",
-            "danger",
-            "warning",
-            "risk",
-            "damage",
-            "concern",
-            "worse",
-            "worsening",
-            "threat",
-        }
-
-        tokens = set(lower.split())
-        pos_matches = len(tokens.intersection(pos_words))
-        neg_matches = len(tokens.intersection(neg_words))
-
-        if pos_matches > neg_matches:
-            pos = min(0.70 + 0.05 * pos_matches, 0.95)
-            neg = (1.0 - pos) * 0.3
-            neu = 1.0 - pos - neg
-            label = "positive"
-            conf = pos
-        elif neg_matches > pos_matches:
-            neg = min(0.70 + 0.05 * neg_matches, 0.95)
-            pos = (1.0 - neg) * 0.3
-            neu = 1.0 - neg - pos
-            label = "negative"
-            conf = neg
-        else:
-            neu = 0.70
-            pos = 0.15
-            neg = 0.15
-            label = "neutral"
-            conf = neu
-
-        return SentimentResultData(
-            label=label,
-            confidence=round(conf, 4),
-            score_positive=round(pos, 4),
-            score_neutral=round(neu, 4),
-            score_negative=round(neg, 4),
-        )
+            raise RuntimeError(
+                f"Sentiment model {self.model_name} is unavailable. "
+                "Download the model weights and retry analysis."
+            ) from exc
 
     def predict(self, text: str) -> SentimentResultData:
         """Predict sentiment for a single text string."""
         return self.predict_batch([text])[0]
+
+    def metadata(self) -> Dict[str, Any]:
+        config = getattr(getattr(self._pipeline, "model", None), "config", None)
+        return {
+            "model": self.model_name,
+            "revision": getattr(config, "_commit_hash", None),
+            "max_tokens": 128,
+            "device": "cpu",
+        }
 
     def predict_batch(self, texts: List[str], batch_size: int = 32) -> List[SentimentResultData]:
         """Perform batched sentiment inference."""
@@ -173,10 +94,6 @@ class SentimentAnalyzer:
             return []
 
         self.load_model()
-
-        if self._pipeline is None:
-            # Fallback heuristic prediction
-            return [self._heuristic_predict(t) for t in texts]
 
         results: List[SentimentResultData] = []
         # Batch inference

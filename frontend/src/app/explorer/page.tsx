@@ -1,0 +1,23 @@
+"use client";
+import { useSearchParams } from "next/navigation";
+import { api } from "@/lib/api";
+import { useAnalysis, ContextToolbar } from "@/components/AnalysisContext";
+import { ErrorNotice, Loading } from "@/components/Feedback";
+import { useResource } from "@/hooks/useResource";
+export default function Explorer() {
+  const ctx = useAnalysis(), search = useSearchParams();
+  const q = search.get("q") || "", sentiment = search.get("sentiment") || "", topic = search.get("topic") || "";
+  const from = search.get("from") || "", to = search.get("to") || "";
+  const offset = Math.max(0, Number(search.get("offset")) || 0), limit = 20;
+  const ready = !ctx.loading && !ctx.error && !!ctx.dataset && (!ctx.run || ctx.run.status === "completed");
+  const topics = useResource(ctx.query, () => api.getTopics(ctx.read), ready && ctx.run?.status === "completed");
+  const resource = useResource(`${ctx.query}:${q}:${sentiment}:${topic}:${from}:${to}:${offset}`, () => api.searchPosts({ ...ctx.read, q, sentiment: sentiment || undefined, topic_id: topic || undefined, date_from: from ? `${from}T00:00:00Z` : undefined, date_to: to ? `${to}T23:59:59.999999Z` : undefined, offset, limit }), ready);
+  return <><div className="page-heading"><div><p className="eyebrow">Post investigation</p><h1>Explorer</h1><p className="muted">Search original posts. Sentiment and topic filters use only the selected completed run.</p></div></div><ContextToolbar filters={false} /><ErrorNotice error={ctx.error} retry={ctx.refresh} />
+    {!ctx.loading && !ctx.dataset && <p className="empty-state">Add a dataset to search posts.</p>}{ctx.run && ctx.run.status !== "completed" && <p role="status" className="notice">This run is {ctx.run.status}. Choose a completed run to inspect enrichment.</p>}
+    <form className="filter-row" onSubmit={event => { event.preventDefault(); const values = Object.fromEntries(new FormData(event.currentTarget)); ctx.select({ ...Object.fromEntries(Object.entries(values).map(([key, value]) => [key, String(value)])), offset: undefined }); }}>
+      <label>Keyword<input name="q" key={q} defaultValue={q} placeholder="Search original text" /></label><label>Platform<select name="platform" key={ctx.platform} defaultValue={ctx.platform}><option value="">All platforms</option>{Object.keys(ctx.dataset?.validation_results?.platform_distribution || {}).map(value => <option key={value}>{value}</option>)}</select></label>
+      <label>Sentiment<select name="sentiment" key={sentiment} defaultValue={sentiment} disabled={!ctx.run}><option value="">All sentiments</option>{["positive", "neutral", "negative"].map(value => <option key={value}>{value}</option>)}</select></label><label>Topic<select name="topic" key={topic} defaultValue={topic} disabled={!ctx.run}><option value="">All topics</option>{topics.data?.topics.map(item => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label><label>From (UTC)<input type="date" name="from" key={from} defaultValue={from} /></label><label>Through (UTC)<input type="date" name="to" key={to} defaultValue={to} /></label><button type="submit" className="primary">Search posts</button><button type="button" onClick={() => ctx.select({ q: undefined, platform: undefined, sentiment: undefined, topic: undefined, from: undefined, to: undefined, offset: undefined })}>Clear</button>
+    </form>{resource.loading && <Loading />}<ErrorNotice error={resource.error || topics.error} retry={() => { resource.retry(); topics.retry(); }} />
+    {resource.data && <section className="panel"><div className="section-heading"><h2>{resource.data.total} matching posts</h2><span className="numeric">{resource.data.total ? offset + 1 : 0}–{Math.min(offset + limit, resource.data.total)}</span></div>{!resource.data.items.length && <p className="empty-state">No posts match these filters. Clear or broaden the search.</p>}{resource.data.items.map(post => <article className="post-row" key={post.id}><p>{post.original_text}</p><p className="muted numeric">{new Date(post.timestamp).toLocaleString()} · {post.platform || "Unknown platform"} · {post.sentiment || "Unscored"}</p><p className="muted">{post.topic_name || "No topic assignment"} · Likes {post.likes ?? "—"} / Comments {post.comments ?? "—"} / Shares {post.shares ?? "—"}</p></article>)}<nav className="pagination" aria-label="Post results pages"><button disabled={offset === 0} onClick={() => ctx.select({ offset: String(Math.max(0, offset - limit)) })}>Previous</button><button disabled={offset + limit >= resource.data.total} onClick={() => ctx.select({ offset: String(offset + limit) })}>Next</button></nav></section>}
+  </>;
+}

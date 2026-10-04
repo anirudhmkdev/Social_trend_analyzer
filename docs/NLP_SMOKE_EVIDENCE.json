@@ -1,0 +1,2839 @@
+{
+  "observed_on": "2026-10-03",
+  "inference": "Real CPU models; existing local caches; no test fixtures",
+  "workflows": [
+    {
+      "workflow": "uploaded_csv",
+      "run_id": "35c4c535-5ce5-4c73-8edc-2fbb448f1b44",
+      "dataset_id": "9009feab-8d80-49a4-b9af-445c5fd66dd8",
+      "seconds": 44.94,
+      "posts": 90,
+      "non_outlier_topics": 4,
+      "outlier_posts": 0,
+      "sentiment": {
+        "counts": {
+          "positive": 21,
+          "neutral": 52,
+          "negative": 17
+        },
+        "percentages": {
+          "positive": 23.3,
+          "neutral": 57.8,
+          "negative": 18.9
+        },
+        "total": 90
+      },
+      "latest_classifications": {
+        "emerging": 0,
+        "rising": 1,
+        "stable": 3,
+        "declining": 0
+      },
+      "model_info": {
+        "sentiment_model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+        "sentiment_license": "CC-BY-4.0",
+        "package_versions": {
+          "transformers": "5.18.0",
+          "sentence-transformers": "6.1.0",
+          "torch": "2.14.1+cpu",
+          "spacy": "3.8.16",
+          "bertopic": "0.17.4",
+          "umap-learn": "0.5.12",
+          "hdbscan": "0.8.44",
+          "scikit-learn": "1.9.1",
+          "numpy": "2.5.3",
+          "pandas": "3.0.6"
+        },
+        "sentiment": {
+          "model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+          "revision": null,
+          "max_tokens": 128,
+          "device": "cpu"
+        },
+        "embeddings": {
+          "model": "all-MiniLM-L6-v2",
+          "revision": null,
+          "dimensions": 384,
+          "device": "cpu"
+        },
+        "embedding_model": "all-MiniLM-L6-v2",
+        "embedding_dimensions": 384,
+        "topic_model": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+        "topic_parameters": {
+          "method": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+          "min_cluster_size": 8,
+          "min_samples": 3,
+          "semantic_merge_threshold": 0.9,
+          "raw_cluster_count": 4,
+          "merge_groups": [],
+          "random_seed": 42
+        },
+        "ner_model": "en_core_web_sm",
+        "ner": {
+          "model": "en_core_web_sm",
+          "status": "available",
+          "warning": null,
+          "version": "3.8.0"
+        },
+        "degraded": false,
+        "warnings": [],
+        "reference_time": "2026-09-21T20:37:25+00:00",
+        "trend_weights": {
+          "volume": 0.35,
+          "engagement": 0.25,
+          "velocity": 0.2,
+          "burstiness": 0.2
+        }
+      },
+      "topics": [
+        {
+          "display_name": "Sports Competition",
+          "post_count": 26,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "sports",
+              "score": 0.1667
+            },
+            {
+              "word": "football sports",
+              "score": 0.1151
+            },
+            {
+              "word": "football",
+              "score": 0.1151
+            },
+            {
+              "word": "tournament",
+              "score": 0.0978
+            },
+            {
+              "word": "nba",
+              "score": 0.0887
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 0,
+                "keywords": [
+                  {
+                    "word": "sports",
+                    "score": 0.1667
+                  },
+                  {
+                    "word": "football sports",
+                    "score": 0.1151
+                  },
+                  {
+                    "word": "football",
+                    "score": 0.1151
+                  },
+                  {
+                    "word": "tournament",
+                    "score": 0.0978
+                  },
+                  {
+                    "word": "nba",
+                    "score": 0.0887
+                  },
+                  {
+                    "word": "decision football",
+                    "score": 0.079
+                  },
+                  {
+                    "word": "fans",
+                    "score": 0.079
+                  },
+                  {
+                    "word": "season",
+                    "score": 0.079
+                  },
+                  {
+                    "word": "react",
+                    "score": 0.079
+                  },
+                  {
+                    "word": "opener",
+                    "score": 0.079
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Crypto Regulation",
+          "post_count": 25,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "crypto",
+              "score": 0.1594
+            },
+            {
+              "word": "regulatory",
+              "score": 0.1133
+            },
+            {
+              "word": "bitcoin",
+              "score": 0.09
+            },
+            {
+              "word": "market",
+              "score": 0.09
+            },
+            {
+              "word": "blockchain",
+              "score": 0.09
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 1,
+                "keywords": [
+                  {
+                    "word": "crypto",
+                    "score": 0.1594
+                  },
+                  {
+                    "word": "regulatory",
+                    "score": 0.1133
+                  },
+                  {
+                    "word": "bitcoin",
+                    "score": 0.09
+                  },
+                  {
+                    "word": "market",
+                    "score": 0.09
+                  },
+                  {
+                    "word": "blockchain",
+                    "score": 0.09
+                  },
+                  {
+                    "word": "coinbase",
+                    "score": 0.0816
+                  },
+                  {
+                    "word": "defi",
+                    "score": 0.0816
+                  },
+                  {
+                    "word": "action impacts",
+                    "score": 0.0816
+                  },
+                  {
+                    "word": "action",
+                    "score": 0.0816
+                  },
+                  {
+                    "word": "regulatory action",
+                    "score": 0.0816
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Renewable Energy",
+          "post_count": 24,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "renewable",
+              "score": 0.1091
+            },
+            {
+              "word": "greenenergy",
+              "score": 0.0815
+            },
+            {
+              "word": "netzero",
+              "score": 0.0815
+            },
+            {
+              "word": "climatechange",
+              "score": 0.0738
+            },
+            {
+              "word": "new",
+              "score": 0.0633
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 2,
+                "keywords": [
+                  {
+                    "word": "renewable",
+                    "score": 0.1091
+                  },
+                  {
+                    "word": "greenenergy",
+                    "score": 0.0815
+                  },
+                  {
+                    "word": "netzero",
+                    "score": 0.0815
+                  },
+                  {
+                    "word": "climatechange",
+                    "score": 0.0738
+                  },
+                  {
+                    "word": "new",
+                    "score": 0.0633
+                  },
+                  {
+                    "word": "scientists warn",
+                    "score": 0.0573
+                  },
+                  {
+                    "word": "globalwarming",
+                    "score": 0.0573
+                  },
+                  {
+                    "word": "points",
+                    "score": 0.0573
+                  },
+                  {
+                    "word": "impact",
+                    "score": 0.0573
+                  },
+                  {
+                    "word": "globalwarming netzero",
+                    "score": 0.0573
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "AI Model Development",
+          "post_count": 15,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "artificialintelligence",
+              "score": 0.1178
+            },
+            {
+              "word": "model",
+              "score": 0.1178
+            },
+            {
+              "word": "aitech",
+              "score": 0.105
+            },
+            {
+              "word": "language",
+              "score": 0.105
+            },
+            {
+              "word": "large",
+              "score": 0.105
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 3,
+                "keywords": [
+                  {
+                    "word": "artificialintelligence",
+                    "score": 0.1178
+                  },
+                  {
+                    "word": "model",
+                    "score": 0.1178
+                  },
+                  {
+                    "word": "aitech",
+                    "score": 0.105
+                  },
+                  {
+                    "word": "language",
+                    "score": 0.105
+                  },
+                  {
+                    "word": "large",
+                    "score": 0.105
+                  },
+                  {
+                    "word": "large language",
+                    "score": 0.105
+                  },
+                  {
+                    "word": "machinelearning",
+                    "score": 0.105
+                  },
+                  {
+                    "word": "language model",
+                    "score": 0.105
+                  },
+                  {
+                    "word": "ai",
+                    "score": 0.0915
+                  },
+                  {
+                    "word": "generative ai",
+                    "score": 0.0616
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "entities": [
+        {
+          "text": "Coinbase",
+          "label": "ORG",
+          "frequency": 4
+        },
+        {
+          "text": "NBA",
+          "label": "ORG",
+          "frequency": 4
+        },
+        {
+          "text": "SEC",
+          "label": "ORG",
+          "frequency": 3
+        },
+        {
+          "text": "UEFA",
+          "label": "ORG",
+          "frequency": 3
+        },
+        {
+          "text": "IOC",
+          "label": "ORG",
+          "frequency": 2
+        },
+        {
+          "text": "Meta AI",
+          "label": "ORG",
+          "frequency": 2
+        },
+        {
+          "text": "Microsoft",
+          "label": "ORG",
+          "frequency": 2
+        },
+        {
+          "text": "NFT",
+          "label": "ORG",
+          "frequency": 2
+        },
+        {
+          "text": "UN Climate Summit",
+          "label": "ORG",
+          "frequency": 2
+        },
+        {
+          "text": "Wimbledon",
+          "label": "ORG",
+          "frequency": 2
+        }
+      ],
+      "verified_surfaces": [
+        "summary",
+        "timeline",
+        "topics",
+        "topic_detail",
+        "Explorer",
+        "metadata"
+      ]
+    },
+    {
+      "workflow": "bundled_demo",
+      "run_id": "4eb67a55-9550-40cf-829f-75fafed651e3",
+      "dataset_id": "0d3c7a1f-9379-4813-9896-a67c43c06cdd",
+      "seconds": 27.2,
+      "posts": 900,
+      "non_outlier_topics": 25,
+      "outlier_posts": 53,
+      "sentiment": {
+        "counts": {
+          "positive": 176,
+          "neutral": 582,
+          "negative": 142
+        },
+        "percentages": {
+          "positive": 19.6,
+          "neutral": 64.7,
+          "negative": 15.8
+        },
+        "total": 900
+      },
+      "latest_classifications": {
+        "emerging": 1,
+        "rising": 0,
+        "stable": 24,
+        "declining": 0
+      },
+      "model_info": {
+        "sentiment_model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+        "sentiment_license": "CC-BY-4.0",
+        "package_versions": {
+          "transformers": "5.18.0",
+          "sentence-transformers": "6.1.0",
+          "torch": "2.14.1+cpu",
+          "spacy": "3.8.16",
+          "bertopic": "0.17.4",
+          "umap-learn": "0.5.12",
+          "hdbscan": "0.8.44",
+          "scikit-learn": "1.9.1",
+          "numpy": "2.5.3",
+          "pandas": "3.0.6"
+        },
+        "sentiment": {
+          "model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+          "revision": null,
+          "max_tokens": 128,
+          "device": "cpu"
+        },
+        "embeddings": {
+          "model": "all-MiniLM-L6-v2",
+          "revision": null,
+          "dimensions": 384,
+          "device": "cpu"
+        },
+        "embedding_model": "all-MiniLM-L6-v2",
+        "embedding_dimensions": 384,
+        "topic_model": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+        "topic_parameters": {
+          "method": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+          "min_cluster_size": 18,
+          "min_samples": 3,
+          "semantic_merge_threshold": 0.9,
+          "raw_cluster_count": 26,
+          "merge_groups": [
+            [
+              13,
+              17
+            ]
+          ],
+          "random_seed": 42
+        },
+        "ner_model": "en_core_web_sm",
+        "ner": {
+          "model": "en_core_web_sm",
+          "status": "available",
+          "warning": null,
+          "version": "3.8.0"
+        },
+        "degraded": false,
+        "warnings": [],
+        "reference_time": "2026-09-21T23:50:36+00:00",
+        "trend_weights": {
+          "volume": 0.35,
+          "engagement": 0.25,
+          "velocity": 0.2,
+          "burstiness": 0.2
+        }
+      },
+      "topics": [
+        {
+          "display_name": "Sports Competition \u00b7 Sports",
+          "post_count": 64,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "sports",
+              "score": 0.1259
+            },
+            {
+              "word": "lineup",
+              "score": 0.1189
+            },
+            {
+              "word": "lineup sports",
+              "score": 0.1189
+            },
+            {
+              "word": "confirms",
+              "score": 0.1189
+            },
+            {
+              "word": "schedule football",
+              "score": 0.0924
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 0,
+                "keywords": [
+                  {
+                    "word": "sports",
+                    "score": 0.1235
+                  },
+                  {
+                    "word": "lineup",
+                    "score": 0.1173
+                  },
+                  {
+                    "word": "lineup sports",
+                    "score": 0.1173
+                  },
+                  {
+                    "word": "confirms",
+                    "score": 0.1173
+                  },
+                  {
+                    "word": "schedule football",
+                    "score": 0.0912
+                  },
+                  {
+                    "word": "schedule",
+                    "score": 0.0912
+                  },
+                  {
+                    "word": "announces",
+                    "score": 0.0912
+                  },
+                  {
+                    "word": "sports nba",
+                    "score": 0.0911
+                  },
+                  {
+                    "word": "football",
+                    "score": 0.0742
+                  },
+                  {
+                    "word": "football sports",
+                    "score": 0.0742
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Public Health Crisis",
+          "post_count": 60,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "healthcare",
+              "score": 0.1359
+            },
+            {
+              "word": "wellness",
+              "score": 0.1131
+            },
+            {
+              "word": "mentalhealth",
+              "score": 0.1048
+            },
+            {
+              "word": "publichealth",
+              "score": 0.0866
+            },
+            {
+              "word": "pandemic",
+              "score": 0.0732
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 1,
+                "keywords": [
+                  {
+                    "word": "healthcare",
+                    "score": 0.1341
+                  },
+                  {
+                    "word": "wellness",
+                    "score": 0.1117
+                  },
+                  {
+                    "word": "mentalhealth",
+                    "score": 0.1035
+                  },
+                  {
+                    "word": "publichealth",
+                    "score": 0.0857
+                  },
+                  {
+                    "word": "pandemic",
+                    "score": 0.0724
+                  },
+                  {
+                    "word": "releases guidelines",
+                    "score": 0.0653
+                  },
+                  {
+                    "word": "mentalhealth publichealth",
+                    "score": 0.0653
+                  },
+                  {
+                    "word": "guidelines",
+                    "score": 0.0653
+                  },
+                  {
+                    "word": "better",
+                    "score": 0.0616
+                  },
+                  {
+                    "word": "advocates",
+                    "score": 0.0616
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Crypto Regulation \u00b7 Action",
+          "post_count": 57,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "action",
+              "score": 0.1689
+            },
+            {
+              "word": "action impacts",
+              "score": 0.1689
+            },
+            {
+              "word": "impacts",
+              "score": 0.1689
+            },
+            {
+              "word": "regulatory action",
+              "score": 0.1689
+            },
+            {
+              "word": "regulatory",
+              "score": 0.1314
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 13,
+                "keywords": [
+                  {
+                    "word": "action",
+                    "score": 0.1454
+                  },
+                  {
+                    "word": "action impacts",
+                    "score": 0.1454
+                  },
+                  {
+                    "word": "impacts",
+                    "score": 0.1454
+                  },
+                  {
+                    "word": "regulatory action",
+                    "score": 0.1454
+                  },
+                  {
+                    "word": "regulatory",
+                    "score": 0.1129
+                  },
+                  {
+                    "word": "defi crypto",
+                    "score": 0.0924
+                  },
+                  {
+                    "word": "impacts defi",
+                    "score": 0.0924
+                  },
+                  {
+                    "word": "binance regulatory",
+                    "score": 0.0924
+                  },
+                  {
+                    "word": "crash crypto",
+                    "score": 0.0845
+                  },
+                  {
+                    "word": "impacts market",
+                    "score": 0.0845
+                  }
+                ]
+              },
+              {
+                "topic_index": 17,
+                "keywords": [
+                  {
+                    "word": "action impacts",
+                    "score": 0.194
+                  },
+                  {
+                    "word": "action",
+                    "score": 0.194
+                  },
+                  {
+                    "word": "impacts",
+                    "score": 0.194
+                  },
+                  {
+                    "word": "regulatory action",
+                    "score": 0.194
+                  },
+                  {
+                    "word": "regulatory",
+                    "score": 0.1506
+                  },
+                  {
+                    "word": "impacts nft",
+                    "score": 0.1263
+                  },
+                  {
+                    "word": "nft crypto",
+                    "score": 0.1263
+                  },
+                  {
+                    "word": "crypto",
+                    "score": 0.1123
+                  },
+                  {
+                    "word": "impacts cryptocurrency",
+                    "score": 0.1024
+                  },
+                  {
+                    "word": "cryptocurrency crypto",
+                    "score": 0.1024
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Unclassified (Outliers)",
+          "post_count": 53,
+          "is_outlier": true,
+          "keywords": [
+            {
+              "word": "artificialintelligence",
+              "score": 0.0584
+            },
+            {
+              "word": "achieves",
+              "score": 0.0566
+            },
+            {
+              "word": "breakthrough",
+              "score": 0.0566
+            },
+            {
+              "word": "achieves humanlevel",
+              "score": 0.0566
+            },
+            {
+              "word": "humanlevel",
+              "score": 0.0566
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": -1,
+                "keywords": [
+                  {
+                    "word": "artificialintelligence",
+                    "score": 0.0574
+                  },
+                  {
+                    "word": "achieves",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "breakthrough",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "achieves humanlevel",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "humanlevel",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "humanlevel performance",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "points",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "performance artificialintelligence",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "scientists",
+                    "score": 0.0559
+                  },
+                  {
+                    "word": "tipping points",
+                    "score": 0.0559
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Renewable Energy",
+          "post_count": 42,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "energy",
+              "score": 0.1226
+            },
+            {
+              "word": "investments hit",
+              "score": 0.1226
+            },
+            {
+              "word": "energy investments",
+              "score": 0.1226
+            },
+            {
+              "word": "concerns greenenergy",
+              "score": 0.1226
+            },
+            {
+              "word": "investments",
+              "score": 0.1226
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 3,
+                "keywords": [
+                  {
+                    "word": "energy",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "investments hit",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "energy investments",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "concerns greenenergy",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "investments",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "high amid",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "hit",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "hit record",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "high",
+                    "score": 0.1209
+                  },
+                  {
+                    "word": "renewable energy",
+                    "score": 0.1209
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Crypto Markets \u00b7 Bubble",
+          "post_count": 42,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "bubble",
+              "score": 0.1981
+            },
+            {
+              "word": "bubble bitcoin",
+              "score": 0.1981
+            },
+            {
+              "word": "experts warn",
+              "score": 0.1981
+            },
+            {
+              "word": "experts",
+              "score": 0.1981
+            },
+            {
+              "word": "ethereum experts",
+              "score": 0.1951
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 2,
+                "keywords": [
+                  {
+                    "word": "bubble",
+                    "score": 0.1954
+                  },
+                  {
+                    "word": "bubble bitcoin",
+                    "score": 0.1954
+                  },
+                  {
+                    "word": "experts warn",
+                    "score": 0.1954
+                  },
+                  {
+                    "word": "experts",
+                    "score": 0.1954
+                  },
+                  {
+                    "word": "ethereum experts",
+                    "score": 0.1924
+                  },
+                  {
+                    "word": "bitcoin ethereum",
+                    "score": 0.18
+                  },
+                  {
+                    "word": "warn",
+                    "score": 0.1527
+                  },
+                  {
+                    "word": "ethereum",
+                    "score": 0.1468
+                  },
+                  {
+                    "word": "bitcoin",
+                    "score": 0.1286
+                  },
+                  {
+                    "word": "crash bubble",
+                    "score": 0.0878
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Crypto Regulation \u00b7 Drops Amid",
+          "post_count": 40,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "drops amid",
+              "score": 0.159
+            },
+            {
+              "word": "amid regulatory",
+              "score": 0.159
+            },
+            {
+              "word": "concerns crypto",
+              "score": 0.159
+            },
+            {
+              "word": "regulatory concerns",
+              "score": 0.159
+            },
+            {
+              "word": "drops",
+              "score": 0.159
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 4,
+                "keywords": [
+                  {
+                    "word": "drops amid",
+                    "score": 0.1568
+                  },
+                  {
+                    "word": "amid regulatory",
+                    "score": 0.1568
+                  },
+                  {
+                    "word": "concerns crypto",
+                    "score": 0.1568
+                  },
+                  {
+                    "word": "regulatory concerns",
+                    "score": 0.1568
+                  },
+                  {
+                    "word": "drops",
+                    "score": 0.1568
+                  },
+                  {
+                    "word": "price drops",
+                    "score": 0.1568
+                  },
+                  {
+                    "word": "price",
+                    "score": 0.1568
+                  },
+                  {
+                    "word": "crypto bitcoin",
+                    "score": 0.1358
+                  },
+                  {
+                    "word": "amid",
+                    "score": 0.1171
+                  },
+                  {
+                    "word": "concerns",
+                    "score": 0.1171
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "AI Model Development \u00b7 Artificialintelligence",
+          "post_count": 39,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "artificialintelligence",
+              "score": 0.1185
+            },
+            {
+              "word": "research artificialintelligence",
+              "score": 0.0986
+            },
+            {
+              "word": "raises funding",
+              "score": 0.0986
+            },
+            {
+              "word": "raises",
+              "score": 0.0986
+            },
+            {
+              "word": "model",
+              "score": 0.0969
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 5,
+                "keywords": [
+                  {
+                    "word": "artificialintelligence",
+                    "score": 0.1166
+                  },
+                  {
+                    "word": "research artificialintelligence",
+                    "score": 0.0975
+                  },
+                  {
+                    "word": "raises funding",
+                    "score": 0.0975
+                  },
+                  {
+                    "word": "raises",
+                    "score": 0.0975
+                  },
+                  {
+                    "word": "model",
+                    "score": 0.0954
+                  },
+                  {
+                    "word": "artificialintelligence llm",
+                    "score": 0.0901
+                  },
+                  {
+                    "word": "launches new",
+                    "score": 0.0901
+                  },
+                  {
+                    "word": "model artificialintelligence",
+                    "score": 0.0901
+                  },
+                  {
+                    "word": "launches",
+                    "score": 0.0901
+                  },
+                  {
+                    "word": "research",
+                    "score": 0.0882
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Climate Change \u00b7 Summit",
+          "post_count": 38,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "summit",
+              "score": 0.1706
+            },
+            {
+              "word": "discusses",
+              "score": 0.1605
+            },
+            {
+              "word": "commitments climatechange",
+              "score": 0.1605
+            },
+            {
+              "word": "commitments",
+              "score": 0.1605
+            },
+            {
+              "word": "summit discusses",
+              "score": 0.1605
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 6,
+                "keywords": [
+                  {
+                    "word": "summit",
+                    "score": 0.1683
+                  },
+                  {
+                    "word": "discusses",
+                    "score": 0.1585
+                  },
+                  {
+                    "word": "commitments climatechange",
+                    "score": 0.1585
+                  },
+                  {
+                    "word": "commitments",
+                    "score": 0.1585
+                  },
+                  {
+                    "word": "summit discusses",
+                    "score": 0.1585
+                  },
+                  {
+                    "word": "climatechange",
+                    "score": 0.0968
+                  },
+                  {
+                    "word": "agreement summit",
+                    "score": 0.0854
+                  },
+                  {
+                    "word": "paris",
+                    "score": 0.0762
+                  },
+                  {
+                    "word": "agreement",
+                    "score": 0.0762
+                  },
+                  {
+                    "word": "paris agreement",
+                    "score": 0.0762
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "AI Model Development \u00b7 Publish",
+          "post_count": 37,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "publish",
+              "score": 0.1619
+            },
+            {
+              "word": "researchers",
+              "score": 0.1619
+            },
+            {
+              "word": "paper machinelearning",
+              "score": 0.1619
+            },
+            {
+              "word": "paper",
+              "score": 0.1619
+            },
+            {
+              "word": "machinelearning researchers",
+              "score": 0.1445
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 7,
+                "keywords": [
+                  {
+                    "word": "publish",
+                    "score": 0.1598
+                  },
+                  {
+                    "word": "researchers",
+                    "score": 0.1598
+                  },
+                  {
+                    "word": "paper machinelearning",
+                    "score": 0.1598
+                  },
+                  {
+                    "word": "paper",
+                    "score": 0.1598
+                  },
+                  {
+                    "word": "machinelearning researchers",
+                    "score": 0.1428
+                  },
+                  {
+                    "word": "machinelearning",
+                    "score": 0.1208
+                  },
+                  {
+                    "word": "publish generative",
+                    "score": 0.0757
+                  },
+                  {
+                    "word": "ai paper",
+                    "score": 0.0757
+                  },
+                  {
+                    "word": "ai",
+                    "score": 0.0665
+                  },
+                  {
+                    "word": "openai publish",
+                    "score": 0.0596
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Climate Change \u00b7 Climatechange Greenenergy",
+          "post_count": 35,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "climatechange greenenergy",
+              "score": 0.1621
+            },
+            {
+              "word": "impact worsening",
+              "score": 0.1621
+            },
+            {
+              "word": "study shows",
+              "score": 0.1621
+            },
+            {
+              "word": "worsening climatechange",
+              "score": 0.1621
+            },
+            {
+              "word": "shows",
+              "score": 0.1621
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 9,
+                "keywords": [
+                  {
+                    "word": "climatechange greenenergy",
+                    "score": 0.16
+                  },
+                  {
+                    "word": "impact worsening",
+                    "score": 0.16
+                  },
+                  {
+                    "word": "study shows",
+                    "score": 0.16
+                  },
+                  {
+                    "word": "worsening climatechange",
+                    "score": 0.16
+                  },
+                  {
+                    "word": "shows",
+                    "score": 0.16
+                  },
+                  {
+                    "word": "new study",
+                    "score": 0.16
+                  },
+                  {
+                    "word": "worsening",
+                    "score": 0.16
+                  },
+                  {
+                    "word": "greenenergy new",
+                    "score": 0.157
+                  },
+                  {
+                    "word": "study",
+                    "score": 0.1525
+                  },
+                  {
+                    "word": "impact",
+                    "score": 0.1485
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Crypto Markets \u00b7 Investors Flee",
+          "post_count": 35,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "investors flee",
+              "score": 0.2133
+            },
+            {
+              "word": "investors",
+              "score": 0.2133
+            },
+            {
+              "word": "flee",
+              "score": 0.2133
+            },
+            {
+              "word": "market crypto",
+              "score": 0.2133
+            },
+            {
+              "word": "crypto defi",
+              "score": 0.2133
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 8,
+                "keywords": [
+                  {
+                    "word": "investors flee",
+                    "score": 0.2105
+                  },
+                  {
+                    "word": "investors",
+                    "score": 0.2105
+                  },
+                  {
+                    "word": "flee",
+                    "score": 0.2105
+                  },
+                  {
+                    "word": "market crypto",
+                    "score": 0.2105
+                  },
+                  {
+                    "word": "crypto defi",
+                    "score": 0.2105
+                  },
+                  {
+                    "word": "defi investors",
+                    "score": 0.2066
+                  },
+                  {
+                    "word": "defi",
+                    "score": 0.1905
+                  },
+                  {
+                    "word": "market",
+                    "score": 0.1904
+                  },
+                  {
+                    "word": "crypto",
+                    "score": 0.1076
+                  },
+                  {
+                    "word": "crash market",
+                    "score": 0.081
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Sports Competition \u00b7 Olympics",
+          "post_count": 35,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "olympics",
+              "score": 0.2904
+            },
+            {
+              "word": "recordbreaking",
+              "score": 0.2904
+            },
+            {
+              "word": "recordbreaking performance",
+              "score": 0.2904
+            },
+            {
+              "word": "olympics recordbreaking",
+              "score": 0.2849
+            },
+            {
+              "word": "performance",
+              "score": 0.2222
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 11,
+                "keywords": [
+                  {
+                    "word": "olympics",
+                    "score": 0.2866
+                  },
+                  {
+                    "word": "recordbreaking",
+                    "score": 0.2866
+                  },
+                  {
+                    "word": "recordbreaking performance",
+                    "score": 0.2866
+                  },
+                  {
+                    "word": "olympics recordbreaking",
+                    "score": 0.2813
+                  },
+                  {
+                    "word": "performance",
+                    "score": 0.2187
+                  },
+                  {
+                    "word": "opener olympics",
+                    "score": 0.1009
+                  },
+                  {
+                    "word": "record olympics",
+                    "score": 0.1009
+                  },
+                  {
+                    "word": "performance world",
+                    "score": 0.1009
+                  },
+                  {
+                    "word": "performance season",
+                    "score": 0.1009
+                  },
+                  {
+                    "word": "championship olympics",
+                    "score": 0.0911
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Crypto Markets \u00b7 Halts Withdrawals",
+          "post_count": 35,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "halts withdrawals",
+              "score": 0.1861
+            },
+            {
+              "word": "deepens",
+              "score": 0.1861
+            },
+            {
+              "word": "withdrawals",
+              "score": 0.1861
+            },
+            {
+              "word": "halts",
+              "score": 0.1861
+            },
+            {
+              "word": "deepens crypto",
+              "score": 0.1861
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 10,
+                "keywords": [
+                  {
+                    "word": "halts withdrawals",
+                    "score": 0.1836
+                  },
+                  {
+                    "word": "deepens",
+                    "score": 0.1836
+                  },
+                  {
+                    "word": "withdrawals",
+                    "score": 0.1836
+                  },
+                  {
+                    "word": "halts",
+                    "score": 0.1836
+                  },
+                  {
+                    "word": "deepens crypto",
+                    "score": 0.1836
+                  },
+                  {
+                    "word": "crisis deepens",
+                    "score": 0.1836
+                  },
+                  {
+                    "word": "crisis",
+                    "score": 0.1735
+                  },
+                  {
+                    "word": "crypto",
+                    "score": 0.0938
+                  },
+                  {
+                    "word": "withdrawals blockchain",
+                    "score": 0.0706
+                  },
+                  {
+                    "word": "coinbase halts",
+                    "score": 0.0706
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "AI Model Development \u00b7 Aitech Machinelearning",
+          "post_count": 34,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "aitech machinelearning",
+              "score": 0.2039
+            },
+            {
+              "word": "reshaping industry",
+              "score": 0.2039
+            },
+            {
+              "word": "reshaping",
+              "score": 0.2039
+            },
+            {
+              "word": "industry aitech",
+              "score": 0.2039
+            },
+            {
+              "word": "industry",
+              "score": 0.2039
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 12,
+                "keywords": [
+                  {
+                    "word": "aitech machinelearning",
+                    "score": 0.2014
+                  },
+                  {
+                    "word": "reshaping industry",
+                    "score": 0.2014
+                  },
+                  {
+                    "word": "reshaping",
+                    "score": 0.2014
+                  },
+                  {
+                    "word": "industry aitech",
+                    "score": 0.2014
+                  },
+                  {
+                    "word": "industry",
+                    "score": 0.2014
+                  },
+                  {
+                    "word": "aitech",
+                    "score": 0.1506
+                  },
+                  {
+                    "word": "machinelearning",
+                    "score": 0.1288
+                  },
+                  {
+                    "word": "network reshaping",
+                    "score": 0.0857
+                  },
+                  {
+                    "word": "machinelearning neural",
+                    "score": 0.0784
+                  },
+                  {
+                    "word": "automation reshaping",
+                    "score": 0.0784
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Climate Change \u00b7 Report",
+          "post_count": 27,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "report",
+              "score": 0.2082
+            },
+            {
+              "word": "targets netzero",
+              "score": 0.2082
+            },
+            {
+              "word": "targets",
+              "score": 0.2082
+            },
+            {
+              "word": "releases report",
+              "score": 0.2082
+            },
+            {
+              "word": "releases",
+              "score": 0.1819
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 14,
+                "keywords": [
+                  {
+                    "word": "report",
+                    "score": 0.2057
+                  },
+                  {
+                    "word": "targets netzero",
+                    "score": 0.2057
+                  },
+                  {
+                    "word": "targets",
+                    "score": 0.2057
+                  },
+                  {
+                    "word": "releases report",
+                    "score": 0.2057
+                  },
+                  {
+                    "word": "releases",
+                    "score": 0.1794
+                  },
+                  {
+                    "word": "netzero",
+                    "score": 0.1512
+                  },
+                  {
+                    "word": "netzero climate",
+                    "score": 0.0939
+                  },
+                  {
+                    "word": "report carbon",
+                    "score": 0.0939
+                  },
+                  {
+                    "word": "carbon targets",
+                    "score": 0.0939
+                  },
+                  {
+                    "word": "summit releases",
+                    "score": 0.0939
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Sports Competition \u00b7 Nba Sports",
+          "post_count": 27,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "nba sports",
+              "score": 0.2642
+            },
+            {
+              "word": "highlights",
+              "score": 0.2642
+            },
+            {
+              "word": "night nba",
+              "score": 0.2642
+            },
+            {
+              "word": "night",
+              "score": 0.2642
+            },
+            {
+              "word": "sports highlights",
+              "score": 0.2576
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 15,
+                "keywords": [
+                  {
+                    "word": "nba sports",
+                    "score": 0.2611
+                  },
+                  {
+                    "word": "highlights",
+                    "score": 0.2611
+                  },
+                  {
+                    "word": "night nba",
+                    "score": 0.2611
+                  },
+                  {
+                    "word": "night",
+                    "score": 0.2611
+                  },
+                  {
+                    "word": "sports highlights",
+                    "score": 0.2545
+                  },
+                  {
+                    "word": "nba",
+                    "score": 0.2046
+                  },
+                  {
+                    "word": "sports",
+                    "score": 0.1338
+                  },
+                  {
+                    "word": "championship night",
+                    "score": 0.109
+                  },
+                  {
+                    "word": "highlights championship",
+                    "score": 0.109
+                  },
+                  {
+                    "word": "record night",
+                    "score": 0.0985
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Sports Competition \u00b7 Decision Football",
+          "post_count": 26,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "decision football",
+              "score": 0.227
+            },
+            {
+              "word": "decision",
+              "score": 0.227
+            },
+            {
+              "word": "fans",
+              "score": 0.227
+            },
+            {
+              "word": "fans react",
+              "score": 0.227
+            },
+            {
+              "word": "react",
+              "score": 0.227
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 16,
+                "keywords": [
+                  {
+                    "word": "decision football",
+                    "score": 0.2243
+                  },
+                  {
+                    "word": "decision",
+                    "score": 0.2243
+                  },
+                  {
+                    "word": "fans",
+                    "score": 0.2243
+                  },
+                  {
+                    "word": "fans react",
+                    "score": 0.2243
+                  },
+                  {
+                    "word": "react",
+                    "score": 0.2243
+                  },
+                  {
+                    "word": "sports fans",
+                    "score": 0.2184
+                  },
+                  {
+                    "word": "football sports",
+                    "score": 0.1618
+                  },
+                  {
+                    "word": "football",
+                    "score": 0.1618
+                  },
+                  {
+                    "word": "sports",
+                    "score": 0.1136
+                  },
+                  {
+                    "word": "championship decision",
+                    "score": 0.0868
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "AI Model Development \u00b7 Framework",
+          "post_count": 25,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "framework",
+              "score": 0.1833
+            },
+            {
+              "word": "opensources",
+              "score": 0.1833
+            },
+            {
+              "word": "machinelearning aitech",
+              "score": 0.1833
+            },
+            {
+              "word": "framework machinelearning",
+              "score": 0.1833
+            },
+            {
+              "word": "aitech",
+              "score": 0.1215
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 18,
+                "keywords": [
+                  {
+                    "word": "framework",
+                    "score": 0.181
+                  },
+                  {
+                    "word": "opensources",
+                    "score": 0.181
+                  },
+                  {
+                    "word": "machinelearning aitech",
+                    "score": 0.181
+                  },
+                  {
+                    "word": "framework machinelearning",
+                    "score": 0.181
+                  },
+                  {
+                    "word": "aitech",
+                    "score": 0.1194
+                  },
+                  {
+                    "word": "machinelearning",
+                    "score": 0.1158
+                  },
+                  {
+                    "word": "opensources neural",
+                    "score": 0.0764
+                  },
+                  {
+                    "word": "network framework",
+                    "score": 0.0764
+                  },
+                  {
+                    "word": "model framework",
+                    "score": 0.0764
+                  },
+                  {
+                    "word": "opensources large",
+                    "score": 0.0764
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Sports Competition \u00b7 Wimbledon",
+          "post_count": 25,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "wimbledon",
+              "score": 0.2442
+            },
+            {
+              "word": "sports wimbledon",
+              "score": 0.1788
+            },
+            {
+              "word": "wimbledon announces",
+              "score": 0.1267
+            },
+            {
+              "word": "wimbledon faces",
+              "score": 0.1071
+            },
+            {
+              "word": "worldcup wimbledon",
+              "score": 0.1071
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 19,
+                "keywords": [
+                  {
+                    "word": "wimbledon",
+                    "score": 0.2413
+                  },
+                  {
+                    "word": "sports wimbledon",
+                    "score": 0.1769
+                  },
+                  {
+                    "word": "wimbledon announces",
+                    "score": 0.1255
+                  },
+                  {
+                    "word": "wimbledon faces",
+                    "score": 0.1062
+                  },
+                  {
+                    "word": "worldcup wimbledon",
+                    "score": 0.1062
+                  },
+                  {
+                    "word": "wimbledon confirms",
+                    "score": 0.0959
+                  },
+                  {
+                    "word": "announces",
+                    "score": 0.0845
+                  },
+                  {
+                    "word": "schedule football",
+                    "score": 0.0845
+                  },
+                  {
+                    "word": "schedule",
+                    "score": 0.0845
+                  },
+                  {
+                    "word": "sports",
+                    "score": 0.082
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Controversy \u00b7 Worldcup",
+          "post_count": 24,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "controversy",
+              "score": 0.238
+            },
+            {
+              "word": "worldcup",
+              "score": 0.238
+            },
+            {
+              "word": "faces controversy",
+              "score": 0.238
+            },
+            {
+              "word": "faces",
+              "score": 0.1787
+            },
+            {
+              "word": "controversy season",
+              "score": 0.1476
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 20,
+                "keywords": [
+                  {
+                    "word": "controversy",
+                    "score": 0.235
+                  },
+                  {
+                    "word": "worldcup",
+                    "score": 0.235
+                  },
+                  {
+                    "word": "faces controversy",
+                    "score": 0.235
+                  },
+                  {
+                    "word": "faces",
+                    "score": 0.1759
+                  },
+                  {
+                    "word": "controversy season",
+                    "score": 0.1461
+                  },
+                  {
+                    "word": "opener worldcup",
+                    "score": 0.1461
+                  },
+                  {
+                    "word": "ioc faces",
+                    "score": 0.1169
+                  },
+                  {
+                    "word": "uefa faces",
+                    "score": 0.1169
+                  },
+                  {
+                    "word": "worldcup uefa",
+                    "score": 0.1169
+                  },
+                  {
+                    "word": "worldcup ioc",
+                    "score": 0.1056
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Llm Debate \u00b7 Jobs Aitech",
+          "post_count": 22,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "llm debate",
+              "score": 0.2224
+            },
+            {
+              "word": "debate",
+              "score": 0.218
+            },
+            {
+              "word": "aitech llm",
+              "score": 0.218
+            },
+            {
+              "word": "jobs aitech",
+              "score": 0.218
+            },
+            {
+              "word": "replace jobs",
+              "score": 0.218
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 21,
+                "keywords": [
+                  {
+                    "word": "llm debate",
+                    "score": 0.2199
+                  },
+                  {
+                    "word": "debate",
+                    "score": 0.2154
+                  },
+                  {
+                    "word": "aitech llm",
+                    "score": 0.2154
+                  },
+                  {
+                    "word": "jobs aitech",
+                    "score": 0.2154
+                  },
+                  {
+                    "word": "replace jobs",
+                    "score": 0.2154
+                  },
+                  {
+                    "word": "jobs",
+                    "score": 0.2154
+                  },
+                  {
+                    "word": "replace",
+                    "score": 0.2154
+                  },
+                  {
+                    "word": "llm",
+                    "score": 0.1706
+                  },
+                  {
+                    "word": "aitech",
+                    "score": 0.1355
+                  },
+                  {
+                    "word": "debate generative",
+                    "score": 0.0985
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Climate Change \u00b7 Climatechange Countries",
+          "post_count": 21,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "climatechange countries",
+              "score": 0.206
+            },
+            {
+              "word": "damage climatechange",
+              "score": 0.1909
+            },
+            {
+              "word": "countries",
+              "score": 0.1909
+            },
+            {
+              "word": "countries act",
+              "score": 0.1909
+            },
+            {
+              "word": "damage",
+              "score": 0.1909
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 22,
+                "keywords": [
+                  {
+                    "word": "climatechange countries",
+                    "score": 0.2036
+                  },
+                  {
+                    "word": "damage climatechange",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "countries",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "countries act",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "damage",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "irreversible damage",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "face",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "face irreversible",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "irreversible",
+                    "score": 0.1884
+                  },
+                  {
+                    "word": "act",
+                    "score": 0.1884
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "AI Model Development \u00b7 Artificialintelligence Breakthrough",
+          "post_count": 19,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "artificialintelligence breakthrough",
+              "score": 0.2078
+            },
+            {
+              "word": "performance artificialintelligence",
+              "score": 0.191
+            },
+            {
+              "word": "achieves humanlevel",
+              "score": 0.191
+            },
+            {
+              "word": "breakthrough",
+              "score": 0.191
+            },
+            {
+              "word": "achieves",
+              "score": 0.191
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 23,
+                "keywords": [
+                  {
+                    "word": "artificialintelligence breakthrough",
+                    "score": 0.2054
+                  },
+                  {
+                    "word": "performance artificialintelligence",
+                    "score": 0.1885
+                  },
+                  {
+                    "word": "achieves humanlevel",
+                    "score": 0.1885
+                  },
+                  {
+                    "word": "breakthrough",
+                    "score": 0.1885
+                  },
+                  {
+                    "word": "achieves",
+                    "score": 0.1885
+                  },
+                  {
+                    "word": "humanlevel performance",
+                    "score": 0.1885
+                  },
+                  {
+                    "word": "humanlevel",
+                    "score": 0.1885
+                  },
+                  {
+                    "word": "performance",
+                    "score": 0.1438
+                  },
+                  {
+                    "word": "artificialintelligence",
+                    "score": 0.1348
+                  },
+                  {
+                    "word": "learning achieves",
+                    "score": 0.1222
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Crypto Markets \u00b7 Scrutiny Blockchain",
+          "post_count": 19,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "scrutiny blockchain",
+              "score": 0.2651
+            },
+            {
+              "word": "scrutiny",
+              "score": 0.2651
+            },
+            {
+              "word": "blockchain",
+              "score": 0.2542
+            },
+            {
+              "word": "faces",
+              "score": 0.2074
+            },
+            {
+              "word": "cryptocurrency scrutiny",
+              "score": 0.1729
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 24,
+                "keywords": [
+                  {
+                    "word": "scrutiny blockchain",
+                    "score": 0.2616
+                  },
+                  {
+                    "word": "scrutiny",
+                    "score": 0.2616
+                  },
+                  {
+                    "word": "blockchain",
+                    "score": 0.2503
+                  },
+                  {
+                    "word": "faces",
+                    "score": 0.2041
+                  },
+                  {
+                    "word": "cryptocurrency scrutiny",
+                    "score": 0.1713
+                  },
+                  {
+                    "word": "faces cryptocurrency",
+                    "score": 0.1713
+                  },
+                  {
+                    "word": "faces defi",
+                    "score": 0.1548
+                  },
+                  {
+                    "word": "defi scrutiny",
+                    "score": 0.1548
+                  },
+                  {
+                    "word": "blockchain ethereum",
+                    "score": 0.1418
+                  },
+                  {
+                    "word": "ethereum faces",
+                    "score": 0.1384
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "display_name": "Netzero Scientists \u00b7 Points Globalwarming",
+          "post_count": 19,
+          "is_outlier": false,
+          "keywords": [
+            {
+              "word": "netzero scientists",
+              "score": 0.195
+            },
+            {
+              "word": "points globalwarming",
+              "score": 0.184
+            },
+            {
+              "word": "globalwarming",
+              "score": 0.184
+            },
+            {
+              "word": "points",
+              "score": 0.184
+            },
+            {
+              "word": "tipping",
+              "score": 0.184
+            }
+          ],
+          "raw_provenance": {
+            "raw_topics": [
+              {
+                "topic_index": 25,
+                "keywords": [
+                  {
+                    "word": "netzero scientists",
+                    "score": 0.1927
+                  },
+                  {
+                    "word": "points globalwarming",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "globalwarming",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "points",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "tipping",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "globalwarming netzero",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "scientists",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "scientists warn",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "tipping points",
+                    "score": 0.1816
+                  },
+                  {
+                    "word": "netzero",
+                    "score": 0.1459
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "entities": [
+        {
+          "text": "NFT",
+          "label": "ORG",
+          "frequency": 45
+        },
+        {
+          "text": "SEC",
+          "label": "ORG",
+          "frequency": 32
+        },
+        {
+          "text": "NBA",
+          "label": "ORG",
+          "frequency": 26
+        },
+        {
+          "text": "Meta AI",
+          "label": "ORG",
+          "frequency": 25
+        },
+        {
+          "text": "Microsoft",
+          "label": "ORG",
+          "frequency": 20
+        },
+        {
+          "text": "UEFA",
+          "label": "ORG",
+          "frequency": 20
+        },
+        {
+          "text": "Paris Agreement",
+          "label": "ORG",
+          "frequency": 18
+        },
+        {
+          "text": "IOC",
+          "label": "ORG",
+          "frequency": 16
+        },
+        {
+          "text": "UN Climate Summit",
+          "label": "ORG",
+          "frequency": 16
+        },
+        {
+          "text": "Coinbase",
+          "label": "ORG",
+          "frequency": 14
+        }
+      ],
+      "verified_surfaces": [
+        "summary",
+        "timeline",
+        "topics",
+        "topic_detail",
+        "Explorer",
+        "metadata"
+      ]
+    }
+  ],
+  "browser_workflows": [
+    {
+      "workflow": "upload_to_analysis_page",
+      "status": "passed",
+      "browser_seconds": 5.2,
+      "run_id": "c96f9acc-ec67-483f-a146-af5bea6189eb",
+      "dataset_id": "1bc01ae3-feb9-4f42-ab9b-6ea0632c61eb",
+      "model_info": {
+        "sentiment_model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+        "sentiment_license": "CC-BY-4.0",
+        "package_versions": {
+          "transformers": "5.18.0",
+          "sentence-transformers": "6.1.0",
+          "torch": "2.14.1+cpu",
+          "spacy": "3.8.16",
+          "bertopic": "0.17.4",
+          "umap-learn": "0.5.12",
+          "hdbscan": "0.8.44",
+          "scikit-learn": "1.9.1",
+          "numpy": "2.5.3",
+          "pandas": "3.0.6"
+        },
+        "sentiment": {
+          "model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+          "revision": null,
+          "max_tokens": 128,
+          "device": "cpu"
+        },
+        "embeddings": {
+          "model": "all-MiniLM-L6-v2",
+          "revision": null,
+          "dimensions": 384,
+          "device": "cpu"
+        },
+        "embedding_model": "all-MiniLM-L6-v2",
+        "embedding_dimensions": 384,
+        "topic_model": "small-corpus agglomerative clustering",
+        "topic_parameters": {
+          "method": "small-corpus agglomerative clustering",
+          "distance_threshold": 0.35
+        },
+        "ner_model": "en_core_web_sm",
+        "ner": {
+          "model": "en_core_web_sm",
+          "status": "available",
+          "warning": null,
+          "version": "3.8.0"
+        },
+        "degraded": false,
+        "warnings": [],
+        "reference_time": "2026-09-03T11:00:00+00:00",
+        "trend_weights": {
+          "volume": 0.35,
+          "engagement": 0.25,
+          "velocity": 0.2,
+          "burstiness": 0.2
+        }
+      },
+      "stats": {
+        "preprocessing": {
+          "dataset_id": "1bc01ae3-feb9-4f42-ab9b-6ea0632c61eb",
+          "posts_processed": 4,
+          "duplicates_count": 2,
+          "total_urls": 0,
+          "total_hashtags": 0,
+          "total_mentions": 0,
+          "preprocessing_version": "1.0.0",
+          "status": "preprocessed",
+          "reused_canonical": false
+        },
+        "sentiment": {
+          "total_posts": 4,
+          "positive_count": 0,
+          "neutral_count": 4,
+          "negative_count": 0,
+          "positive_pct": 0.0,
+          "neutral_pct": 1.0,
+          "negative_pct": 0.0,
+          "evaluation_metrics": null
+        },
+        "topics": {
+          "total_topics": 2,
+          "outlier_count": 0,
+          "discovered_count": 2
+        },
+        "enrichment": {
+          "total_entities": 0,
+          "total_keywords": 7,
+          "total_hashtags": 0
+        },
+        "trends": {
+          "total_snapshots": 4,
+          "topics_evaluated": 2,
+          "classifications": {
+            "emerging": 0,
+            "rising": 0,
+            "stable": 4,
+            "declining": 0
+          }
+        }
+      }
+    },
+    {
+      "workflow": "demo_action_to_new_dashboard",
+      "status": "passed",
+      "browser_seconds": 51.6,
+      "run_id": "755928b6-73d0-4b51-9042-c3c56570eda2",
+      "dataset_id": "0d3c7a1f-9379-4813-9896-a67c43c06cdd",
+      "model_info": {
+        "sentiment_model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+        "sentiment_license": "CC-BY-4.0",
+        "package_versions": {
+          "transformers": "5.18.0",
+          "sentence-transformers": "6.1.0",
+          "torch": "2.14.1+cpu",
+          "spacy": "3.8.16",
+          "bertopic": "0.17.4",
+          "umap-learn": "0.5.12",
+          "hdbscan": "0.8.44",
+          "scikit-learn": "1.9.1",
+          "numpy": "2.5.3",
+          "pandas": "3.0.6"
+        },
+        "sentiment": {
+          "model": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+          "revision": null,
+          "max_tokens": 128,
+          "device": "cpu"
+        },
+        "embeddings": {
+          "model": "all-MiniLM-L6-v2",
+          "revision": null,
+          "dimensions": 384,
+          "device": "cpu"
+        },
+        "embedding_model": "all-MiniLM-L6-v2",
+        "embedding_dimensions": 384,
+        "topic_model": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+        "topic_parameters": {
+          "method": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+          "min_cluster_size": 18,
+          "min_samples": 3,
+          "semantic_merge_threshold": 0.9,
+          "raw_cluster_count": 26,
+          "merge_groups": [
+            [
+              13,
+              17
+            ]
+          ],
+          "random_seed": 42
+        },
+        "ner_model": "en_core_web_sm",
+        "ner": {
+          "model": "en_core_web_sm",
+          "status": "available",
+          "warning": null,
+          "version": "3.8.0"
+        },
+        "degraded": false,
+        "warnings": [],
+        "reference_time": "2026-09-21T23:50:36+00:00",
+        "trend_weights": {
+          "volume": 0.35,
+          "engagement": 0.25,
+          "velocity": 0.2,
+          "burstiness": 0.2
+        }
+      },
+      "stats": {
+        "preprocessing": {
+          "dataset_id": "0d3c7a1f-9379-4813-9896-a67c43c06cdd",
+          "posts_processed": 900,
+          "duplicates_count": 580,
+          "preprocessing_version": "1.0.0",
+          "status": "preprocessed",
+          "reused_canonical": true
+        },
+        "sentiment": {
+          "total_posts": 900,
+          "positive_count": 176,
+          "neutral_count": 582,
+          "negative_count": 142,
+          "positive_pct": 0.1956,
+          "neutral_pct": 0.6467,
+          "negative_pct": 0.1578,
+          "evaluation_metrics": null
+        },
+        "topics": {
+          "total_topics": 25,
+          "outlier_count": 53,
+          "discovered_count": 26
+        },
+        "enrichment": {
+          "total_entities": 24,
+          "total_keywords": 50,
+          "total_hashtags": 23
+        },
+        "trends": {
+          "total_snapshots": 515,
+          "topics_evaluated": 25,
+          "classifications": {
+            "emerging": 1,
+            "rising": 1,
+            "stable": 513,
+            "declining": 0
+          }
+        }
+      }
+    }
+  ]
+}

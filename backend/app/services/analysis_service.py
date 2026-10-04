@@ -5,12 +5,14 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version
+from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import ConflictException, EntityNotFoundException
+from app.core.exceptions import ConflictException, EntityNotFoundException, ValidationException
 from app.database.engine import SessionLocal
 from app.models.analysis_run import AnalysisRun
 from app.models.dataset import Dataset
@@ -40,6 +42,28 @@ from app.nlp.trends.config import TrendConfig
 from app.nlp.trends.engine import TrendEngine
 
 logger = logging.getLogger(__name__)
+_enqueue_lock = Lock()
+
+
+def package_versions() -> Dict[str, str]:
+    result = {}
+    for name in [
+        "transformers",
+        "sentence-transformers",
+        "torch",
+        "spacy",
+        "bertopic",
+        "umap-learn",
+        "hdbscan",
+        "scikit-learn",
+        "numpy",
+        "pandas",
+    ]:
+        try:
+            result[name] = version(name)
+        except PackageNotFoundError:
+            result[name] = "not installed"
+    return result
 
 
 def get_active_analysis_run(db: Session) -> Optional[AnalysisRun]:
@@ -53,7 +77,19 @@ def get_active_analysis_run(db: Session) -> Optional[AnalysisRun]:
     return db.execute(stmt).scalar_one_or_none()
 
 
-def create_analysis_run(
+def recover_interrupted_runs(db: Session) -> None:
+    """The documented single-process server cannot resume in-memory jobs after restart."""
+    for run in db.scalars(
+        select(AnalysisRun).where(AnalysisRun.status.in_(["pending", "running"]))
+    ):
+        run.status = "failed"
+        run.current_step = "Interrupted"
+        run.error_message = "Analysis was interrupted by a server restart. Run analysis again."
+        run.completed_at = datetime.now(timezone.utc)
+    db.commit()
+
+
+def _create_analysis_run(
     db: Session,
     dataset_id: uuid.UUID,
     config: Optional[Dict[str, Any]] = None,
@@ -63,6 +99,16 @@ def create_analysis_run(
     dataset = db.execute(select(Dataset).where(Dataset.id == dataset_id)).scalar_one_or_none()
     if not dataset:
         raise EntityNotFoundException("Dataset", str(dataset_id))
+    if dataset.status not in {"imported", "preprocessed"}:
+        raise ConflictException("Import and validate this dataset before analysis.")
+    if not db.scalar(select(Post.id).where(Post.dataset_id == dataset.id).limit(1)):
+        raise ValidationException(
+            "Dataset contains no imported posts. Upload valid data before analysis."
+        )
+    if config:
+        raise ValidationException(
+            "This pipeline uses fixed, versioned settings; parameter overrides are unsupported."
+        )
 
     # Concurrency guard: Only 1 active analysis run allowed
     active_run = get_active_analysis_run(db)
@@ -78,7 +124,6 @@ def create_analysis_run(
         "sentiment_license": SENTIMENT_MODEL_LICENSE,
         "batch_size": 32,
         "random_seed": 42,
-        **(config or {}),
     }
 
     run = AnalysisRun(
@@ -100,6 +145,16 @@ def create_analysis_run(
     return run
 
 
+def create_analysis_run(
+    db: Session,
+    dataset_id: uuid.UUID,
+    config: Optional[Dict[str, Any]] = None,
+) -> AnalysisRun:
+    """Serialize check-and-enqueue for the documented single-process local server."""
+    with _enqueue_lock:
+        return _create_analysis_run(db, dataset_id, config)
+
+
 def get_analysis_run(db: Session, run_id: uuid.UUID) -> AnalysisRun:
     """Retrieve an AnalysisRun by ID."""
     run = db.execute(select(AnalysisRun).where(AnalysisRun.id == run_id)).scalar_one_or_none()
@@ -112,6 +167,8 @@ def list_analysis_runs(db: Session, dataset_id: Optional[uuid.UUID] = None) -> L
     """List analysis runs optionally filtered by dataset."""
     stmt = select(AnalysisRun).order_by(desc(AnalysisRun.created_at))
     if dataset_id:
+        if db.get(Dataset, dataset_id) is None:
+            raise EntityNotFoundException("Dataset", str(dataset_id))
         stmt = stmt.where(AnalysisRun.dataset_id == dataset_id)
     return list(db.execute(stmt).scalars().all())
 
@@ -153,12 +210,7 @@ def execute_analysis_run(run_id: uuid.UUID, db_session: Optional[Session] = None
         )
 
         if not posts:
-            run.status = "completed"
-            run.progress_pct = 100
-            run.completed_at = datetime.now(timezone.utc)
-            run.current_step = "Completed (empty dataset)"
-            db.commit()
-            return
+            raise ValidationException("Dataset contains no imported posts.")
 
         logger.info("Running sentiment inference on %d posts...", len(posts))
         texts = [p.sentiment_ready_text or p.original_text for p in posts]
@@ -238,6 +290,7 @@ def execute_analysis_run(run_id: uuid.UUID, db_session: Optional[Session] = None
                 representative_docs=dt.representative_docs,
                 post_count=len(dt.post_indices),
                 is_outlier=dt.is_outlier,
+                model_metadata=dt.model_metadata,
                 created_at=datetime.now(timezone.utc),
             )
             topic_objects.append(topic_rec)
@@ -374,20 +427,9 @@ def execute_analysis_run(run_id: uuid.UUID, db_session: Optional[Session] = None
         run.current_step = "Trend Detection"
         db.commit()
 
-        dataset = db.execute(
-            select(Dataset).where(Dataset.id == run.dataset_id)
-        ).scalar_one_or_none()
-        has_engagement = False
-        if dataset and dataset.column_mapping:
-            if any(
-                k in dataset.column_mapping for k in ("likes", "shares", "comments", "engagement")
-            ):
-                has_engagement = True
-        if not has_engagement:
-            if any(
-                p.likes is not None or p.shares is not None or p.comments is not None for p in posts
-            ):
-                has_engagement = True
+        has_engagement = any(
+            p.likes is not None or p.shares is not None or p.comments is not None for p in posts
+        )
 
         trend_config = TrendConfig()
         trend_engine = TrendEngine(config=trend_config)
@@ -472,10 +514,18 @@ def execute_analysis_run(run_id: uuid.UUID, db_session: Optional[Session] = None
 
         run.model_info = {
             **(run.model_info or {}),
+            "package_versions": package_versions(),
+            "sentiment": analyzer.metadata(),
+            "embeddings": embedder.metadata(),
             "embedding_model": EMBEDDING_MODEL_NAME,
             "embedding_dimensions": EMBEDDING_DIMENSIONS,
-            "topic_model": "BERTopic + UMAP + HDBSCAN + c-TF-IDF",
+            "topic_model": topic_modeler.metadata.get("method"),
+            "topic_parameters": topic_modeler.metadata,
             "ner_model": NER_MODEL_NAME,
+            "ner": ner.metadata(),
+            "degraded": ner.status != "available",
+            "warnings": [ner.error] if ner.error else [],
+            "reference_time": dataset_max_time.isoformat(),
             "trend_weights": {
                 "volume": trend_config.weight_volume,
                 "engagement": trend_config.weight_engagement,
@@ -502,6 +552,7 @@ def execute_analysis_run(run_id: uuid.UUID, db_session: Optional[Session] = None
     except Exception as exc:
         logger.exception("Error executing AnalysisRun %s: %s", run_id, exc)
         try:
+            db.rollback()
             stmt = select(AnalysisRun).where(AnalysisRun.id == run_id)
             run = db.execute(stmt).scalar_one_or_none()
             if run:
@@ -511,7 +562,7 @@ def execute_analysis_run(run_id: uuid.UUID, db_session: Optional[Session] = None
                 run.current_step = "Failed"
                 db.commit()
         except Exception:
-            pass
+            logger.exception("Could not persist the failed status for analysis %s", run_id)
     finally:
         if should_close:
             db.close()

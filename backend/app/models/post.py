@@ -23,7 +23,6 @@ class Post(Base):
         Uuid(as_uuid=True),
         ForeignKey("datasets.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
     external_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     original_text: Mapped[str] = mapped_column(Text, nullable=False)
@@ -32,9 +31,8 @@ class Post(Base):
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        index=True,
     )
-    platform: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    platform: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     hashtags: Mapped[Optional[List[str]]] = mapped_column(PortableJSON, nullable=True)
     likes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     comments: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)

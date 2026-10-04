@@ -1,3 +1,5 @@
+> Historical planning snapshot. Phase labels and completion notes below are not current verification. See PRD.md for supported scope and docs/CODEX_AUDIT.md for executed evidence.
+
 # Social Trend Analyzer — Implementation Roadmap
 
 > **Version:** 1.0  

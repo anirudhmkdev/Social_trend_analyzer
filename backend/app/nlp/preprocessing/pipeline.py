@@ -51,11 +51,9 @@ def run_dataset_preprocessing(
         }
 
     # Check if already preprocessed
-    first_post = posts[0]
     if (
         not force_reprocess
-        and first_post.cleaned_text is not None
-        and first_post.sentiment_ready_text is not None
+        and all(p.cleaned_text is not None and p.sentiment_ready_text is not None for p in posts)
         and dataset.preprocessing_version == PREPROCESSING_VERSION
     ):
         logger.info(
@@ -84,11 +82,11 @@ def run_dataset_preprocessing(
         res: PreprocessedText = preprocessor.process(post.original_text, seen_hashes=seen_hashes)
         post.cleaned_text = res.cleaned_text
         post.sentiment_ready_text = res.sentiment_ready_text
-        post.hashtags = res.hashtags
+        post.hashtags = list(dict.fromkeys([*(post.hashtags or []), *res.hashtags]))
         post.mentions = res.mentions
         post.urls = res.urls
         post.is_duplicate = res.is_duplicate
-        post.preprocessing_meta = res.preprocessing_meta
+        post.preprocessing_meta = {**(post.preprocessing_meta or {}), **res.preprocessing_meta}
 
         if res.is_duplicate:
             duplicate_count += 1

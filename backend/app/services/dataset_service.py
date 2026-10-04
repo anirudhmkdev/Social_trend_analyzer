@@ -5,22 +5,25 @@ from __future__ import annotations
 import os
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.core.exceptions import EntityNotFoundException, ValidationException
+from app.core.exceptions import ConflictException, EntityNotFoundException, ValidationException
 from app.core.logging import logger
 from app.ingestion.csv_parser import (
     ParseResult,
     apply_column_mapping,
+    get_csv_preview,
     parse_csv,
 )
 from app.ingestion.normalizer import normalize_dataframe
 from app.ingestion.sample_generator import generate_sample_dataset
 from app.ingestion.validator import validate_dataset
+from app.models.analysis_run import AnalysisRun
 from app.models.dataset import Dataset
 from app.models.post import Post
 
@@ -29,21 +32,42 @@ from app.models.post import Post
 # ---------------------------------------------------------------------------
 
 
-def _ensure_upload_dir() -> str:
-    """Ensure the upload directory exists and return its path."""
-    upload_dir = settings.UPLOAD_DIR
-    os.makedirs(upload_dir, exist_ok=True)
-    return upload_dir
+def _staged_path(dataset: Dataset) -> Path:
+    """Only server-generated UUID filenames can be resolved in the upload directory."""
+    expected = f"{dataset.id.hex}.csv"
+    if dataset.staged_filename != expected:
+        raise ValidationException(
+            "The staged CSV is unavailable. Delete this upload and upload again."
+        )
+    return Path(settings.UPLOAD_DIR).resolve() / expected
 
 
-def _save_file(content: bytes, filename: str) -> str:
-    """Save uploaded bytes to the upload directory. Returns the saved filepath."""
-    upload_dir = _ensure_upload_dir()
-    safe_name = f"{uuid.uuid4().hex}_{os.path.basename(filename)}"
-    filepath = os.path.join(upload_dir, safe_name)
-    with open(filepath, "wb") as f:
-        f.write(content)
-    return filepath
+def _read_staged(dataset: Dataset) -> ParseResult:
+    try:
+        content = _staged_path(dataset).read_bytes()
+        return parse_csv(content, dataset.filename, settings.MAX_UPLOAD_SIZE_MB)
+    except (OSError, ValueError) as exc:
+        raise ValidationException(
+            "Cannot read the staged CSV. Delete this upload and upload again."
+        ) from exc
+
+
+def _check_mapping(mapping: Dict[str, Optional[str]], columns: List[str]) -> None:
+    for required in ("text", "timestamp"):
+        if not mapping.get(required):
+            raise ValidationException(f"Choose a {required} column before validation.")
+    selected = [v for v in mapping.values() if v is not None]
+    if any(v not in columns for v in selected):
+        raise ValidationException("Mapping references a column that is not in the uploaded CSV.")
+    if len(selected) != len(set(selected)):
+        raise ValidationException("Map each CSV column to only one field.")
+
+
+def _assert_mutable(dataset: Dataset) -> None:
+    if dataset.status in {"imported", "preprocessed"}:
+        raise ConflictException(
+            "Imported datasets are immutable. Upload a new dataset to change mappings."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -79,30 +103,44 @@ def upload_csv(
     except ValueError as exc:
         raise ValidationException(str(exc)) from exc
 
-    # Persist the file
-    try:
-        _save_file(content, filename)
-    except OSError as exc:
-        logger.error("Failed to save uploaded file: %s", exc)
-        # Non-fatal — we can still proceed with in-memory parsing
-
     # Build initial column_mapping dict from auto-detection
     detected_mapping = {
         field: source_col for field, source_col in parse_result.column_mapping.mappings.items()
     }
 
+    dataset_id = uuid.uuid4()
+    safe_filename = filename.replace("\\", "/").split("/")[-1][:500]
     dataset = Dataset(
-        name=os.path.splitext(filename)[0],
-        filename=filename,
+        id=dataset_id,
+        name=os.path.splitext(safe_filename)[0][:255],
+        filename=safe_filename,
+        staged_filename=f"{dataset_id.hex}.csv",
+        upload_metadata={
+            "encoding": parse_result.encoding_used,
+            "warnings": parse_result.warnings,
+            "ambiguous_fields": parse_result.column_mapping.ambiguous_fields,
+        },
         source_type="csv",
         file_size_bytes=len(content),
         row_count=parse_result.total_rows,
         column_mapping=detected_mapping,
         status="uploaded",
     )
-    db.add(dataset)
-    db.commit()
-    db.refresh(dataset)
+    path = _staged_path(dataset)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+    except Exception as exc:
+        db.rollback()
+        path.unlink(missing_ok=True)
+        if isinstance(exc, OSError):
+            raise ValidationException(
+                "Cannot stage the upload. Check upload directory permissions."
+            ) from exc
+        raise
 
     return dataset, parse_result
 
@@ -118,6 +156,11 @@ def load_sample_dataset(db: Session) -> Dataset:
     # Check if sample already exists
     existing = db.query(Dataset).filter(Dataset.source_type == "synthetic_demo").first()
     if existing is not None:
+        if existing.row_count != 900:
+            raise ConflictException(
+                "This stored demo uses an older generator. Delete it from Datasets, then use "
+                "Demo Dataset again to load the current 900-post version."
+            )
         logger.info("Sample dataset already exists (id=%s)", existing.id)
         return existing
 
@@ -220,7 +263,27 @@ def get_dataset_preview(
 
     Returns a dict with columns and rows.
     """
-    get_dataset(db, dataset_id)  # Validates dataset exists
+    dataset = get_dataset(db, dataset_id)
+    if dataset.status not in {"imported", "preprocessed"}:
+        parsed = _read_staged(dataset)
+        detection = parsed.column_mapping
+        return {
+            "dataset_id": dataset_id,
+            "columns": detection.available_columns,
+            "rows": get_csv_preview(parsed.dataframe, n_rows),
+            "total_rows": parsed.total_rows,
+            "shown_rows": min(parsed.total_rows, n_rows),
+            "kind": "raw",
+            "warnings": parsed.warnings,
+            "detection": {
+                "available_columns": detection.available_columns,
+                "ambiguous_fields": detection.ambiguous_fields,
+                "detected": {
+                    field: {"source_column": col, "confidence": detection.confidence[field]}
+                    for field, col in detection.mappings.items()
+                },
+            },
+        }
     posts = (
         db.query(Post)
         .filter(Post.dataset_id == dataset_id)
@@ -273,7 +336,12 @@ def update_column_mapping(
 ) -> Dataset:
     """Update the column mapping for a dataset."""
     dataset = get_dataset(db, dataset_id)
+    _assert_mutable(dataset)
+    parsed = _read_staged(dataset)
+    _check_mapping(column_mapping, parsed.column_mapping.available_columns)
     dataset.column_mapping = column_mapping
+    dataset.validation_results = None
+    dataset.valid_row_count = None
     dataset.status = "mapped"
     dataset.updated_at = datetime.now(timezone.utc)
     db.commit()
@@ -292,44 +360,19 @@ def run_validation(
     """
     dataset = get_dataset(db, dataset_id)
 
-    if not dataset.column_mapping:
-        raise ValidationException("Column mapping must be set before running validation.")
-
-    # For an already-imported dataset, return cached results
-    if dataset.status == "imported" and dataset.validation_results:
+    if dataset.status in {"imported", "preprocessed"} and dataset.validation_results:
         return dataset, dataset.validation_results
-
-    # Re-read posts from database for validation
-    total = db.query(Post).filter(Post.dataset_id == dataset_id).count()
-    valid = (
-        db.query(Post)
-        .filter(Post.dataset_id == dataset_id, Post.is_duplicate == False)  # noqa: E712
-        .count()
-    )
-    dupes = db.query(Post).filter(Post.dataset_id == dataset_id, Post.is_duplicate == True).count()  # noqa: E712
-
-    # Build a minimal validation result from existing data
-    if dataset.validation_results:
-        return dataset, dataset.validation_results
-
-    result_dict: Dict[str, Any] = {
-        "total_rows": total,
-        "valid_rows": valid,
-        "invalid_rows": 0,
-        "issues": {
-            "missing_text": 0,
-            "missing_timestamp": 0,
-            "invalid_timestamp": 0,
-            "duplicate_posts": dupes,
-        },
-        "date_range": {"earliest": None, "latest": None},
-        "platform_distribution": {},
-        "missing_field_counts": {},
-    }
+    if dataset.status not in {"mapped", "validated"}:
+        raise ConflictException("Confirm the column mapping before validation.")
+    parsed = _read_staged(dataset)
+    mapping = dataset.column_mapping or {}
+    _check_mapping(mapping, parsed.column_mapping.available_columns)
+    result, _ = validate_dataset(apply_column_mapping(parsed.dataframe, mapping), mapping)
+    result_dict = result.to_dict()
 
     dataset.validation_results = result_dict
-    dataset.row_count = total
-    dataset.valid_row_count = valid
+    dataset.row_count = result.total_rows
+    dataset.valid_row_count = result.valid_rows
     dataset.status = "validated"
     dataset.updated_at = datetime.now(timezone.utc)
     db.commit()
@@ -341,9 +384,6 @@ def run_validation(
 def import_dataset(
     db: Session,
     dataset_id: UUID,
-    csv_content: bytes,
-    filename: str,
-    column_mapping: Dict[str, Optional[str]],
 ) -> Dataset:
     """
     Import posts from a CSV into the database using the provided column mapping.
@@ -357,33 +397,39 @@ def import_dataset(
     """
     dataset = get_dataset(db, dataset_id)
 
-    # Remove existing posts for this dataset (re-import)
-    db.query(Post).filter(Post.dataset_id == dataset_id).delete()
-
-    try:
-        parse_result = parse_csv(content=csv_content, filename=filename)
-    except ValueError as exc:
-        raise ValidationException(str(exc)) from exc
-
+    if dataset.status in {"imported", "preprocessed"}:
+        return dataset
+    if dataset.status != "validated":
+        raise ConflictException("Validate the dataset before importing.")
+    parse_result = _read_staged(dataset)
+    column_mapping = dataset.column_mapping or {}
+    _check_mapping(column_mapping, parse_result.column_mapping.available_columns)
     mapped_df = apply_column_mapping(parse_result.dataframe, column_mapping)
     validation_result, valid_df = validate_dataset(mapped_df, column_mapping)
 
     normalized = normalize_dataframe(valid_df, dataset_id, column_mapping)
+    if not normalized:
+        raise ValidationException(
+            "No valid rows to import. Correct the mapping or upload a corrected CSV."
+        )
+    if len(normalized) != validation_result.valid_rows:
+        raise ValidationException("Normalization disagrees with validation; no rows were imported.")
 
     batch_size = 500
-    for i in range(0, len(normalized), batch_size):
-        batch = normalized[i : i + batch_size]
-        db.bulk_insert_mappings(Post, batch)  # type: ignore[arg-type]
-
-    dataset.column_mapping = column_mapping
-    dataset.validation_results = validation_result.to_dict()
-    dataset.row_count = parse_result.total_rows
-    dataset.valid_row_count = validation_result.valid_rows
-    dataset.status = "imported"
-    dataset.updated_at = datetime.now(timezone.utc)
-
-    db.commit()
-    db.refresh(dataset)
+    try:
+        dataset.status = "importing"  # transaction-local; failure rolls back to validated
+        for i in range(0, len(normalized), batch_size):
+            db.bulk_insert_mappings(Post, normalized[i : i + batch_size])  # type: ignore[arg-type]
+        dataset.validation_results = validation_result.to_dict()
+        dataset.row_count = parse_result.total_rows
+        dataset.valid_row_count = validation_result.valid_rows
+        dataset.status = "imported"
+        dataset.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(dataset)
+    except Exception:
+        db.rollback()
+        raise
 
     return dataset
 
@@ -391,5 +437,24 @@ def import_dataset(
 def delete_dataset(db: Session, dataset_id: UUID) -> None:
     """Delete a dataset and all its posts (CASCADE)."""
     dataset = get_dataset(db, dataset_id)
+    if (
+        db.query(AnalysisRun)
+        .filter(
+            AnalysisRun.dataset_id == dataset_id, AnalysisRun.status.in_(["pending", "running"])
+        )
+        .first()
+    ):
+        raise ConflictException(
+            "Wait for the active analysis to finish before deleting this dataset."
+        )
+    path = _staged_path(dataset) if dataset.staged_filename else None
+    # Fail before deleting records if the tracked artifact cannot be removed.
+    if path:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as exc:
+            raise ConflictException(
+                "Cannot remove the staged CSV. Check directory permissions and retry."
+            ) from exc
     db.delete(dataset)
     db.commit()

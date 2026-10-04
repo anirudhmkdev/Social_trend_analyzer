@@ -32,7 +32,7 @@ def test_dashboard_analytics_end_to_end(client: TestClient, db_session: Session)
         name="Analytics Test Dataset",
         filename="analytics_test.csv",
         source_type="synthetic",
-        status="ready",
+        status="imported",
         row_count=20,
         column_mapping={"text": "text", "timestamp": "timestamp", "likes": "likes"},
     )

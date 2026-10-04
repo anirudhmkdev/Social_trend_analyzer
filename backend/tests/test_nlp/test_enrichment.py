@@ -72,7 +72,7 @@ def test_enrichment_pipeline_db_persistence(db_session: Session):
         name="Enrichment DB Dataset",
         filename="enrich.csv",
         source_type="csv",
-        status="uploaded",
+        status="imported",
     )
     db_session.add(dataset)
     db_session.commit()
@@ -119,7 +119,7 @@ def test_enrichment_api_endpoints(client: TestClient, db_session: Session):
         name="API Enrichment Dataset",
         filename="api_enrich.csv",
         source_type="csv",
-        status="uploaded",
+        status="imported",
     )
     db_session.add(dataset)
     db_session.commit()

@@ -1,7 +1,7 @@
 """
 Synthetic demonstration dataset generator.
 
-Generates a deterministic ~850-row CSV with:
+Generates a deterministic 900-row CSV with:
 - 5 meaningful themes (climate, AI, crypto, health, sports)
 - 3 platforms (twitter, reddit, instagram)
 - 21-day time range
@@ -234,9 +234,25 @@ def generate_sample_dataset(seed: int = SEED) -> str:
     rows: List[dict] = []
     post_id = 1
 
+    # Scale all theme/day allocations together, preserving the intended trajectories.
+    allocations = [
+        (theme_key, day, volume)
+        for theme_key, spec in THEMES.items()
+        for day, volume in enumerate(PATTERN_GENERATORS[str(spec["base_volume_pattern"])]())
+    ]
+    total = sum(volume for _, _, volume in allocations)
+    scaled = [volume * 900 / total for _, _, volume in allocations]
+    counts = [int(value) for value in scaled]
+    remainder = 900 - sum(counts)
+    order = sorted(range(len(counts)), key=lambda index: (-(scaled[index] - counts[index]), index))
+    for index in order[:remainder]:
+        counts[index] += 1
+    volumes_by_theme = {theme: [0] * 21 for theme in THEMES}
+    for (allocation_theme, day, _), volume in zip(allocations, counts):
+        volumes_by_theme[allocation_theme][day] = volume
+
     for theme_name, theme in THEMES.items():
-        pattern_name = str(theme["base_volume_pattern"])
-        daily_volumes = PATTERN_GENERATORS[pattern_name]()
+        daily_volumes = volumes_by_theme[theme_name]
 
         for day_offset, volume in enumerate(daily_volumes):
             day_start = start_date + timedelta(days=day_offset)
