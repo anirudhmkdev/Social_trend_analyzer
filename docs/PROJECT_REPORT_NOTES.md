@@ -11,7 +11,7 @@ Use the implemented workflow and audit evidence as the source of truth. Do not d
 5. Methods: immutable text representations, RoBERTa sentiment, MiniLM embeddings, seeded UMAP/HDBSCAN/c-TF-IDF, conservative topic consolidation, explicit small-corpus clustering, optional spaCy degradation, keywords/hashtags and UTC trend scoring.
 6. Mathematics: centered logistic signals; weighted momentum .35/.25/.20/.20; `TrendScore = .5 + (M − .5) × recency`; missing-engagement weight redistribution; three-post Stable guard and four classifications. Sentiment is contextual evidence and is not a score component.
 7. Results: quote only executed evidence in `CODEX_AUDIT.md` and `NLP_SMOKE_EVIDENCE.json`. Distinguish deterministic fixture integration from real-model smoke. Show a topic's original posts, raw keywords, full history and explanation, not only summary totals.
-8. Limitations: small synthetic corpus/template artifacts, English model/domain bias, input truncation, imperfect named entities, platform-dependent clustering, single-server process, unsupported ground-truth accuracy claims and unverified PostgreSQL runtime if unavailable.
+8. Limitations: small synthetic corpus/template artifacts, English model/domain bias, input truncation, imperfect named entities, platform-dependent clustering, single-server process and unsupported ground-truth accuracy claims. PostgreSQL 16.14 runtime was verified on 2026-10-04 with temporary synthetic data; populated production-data rollbacks and physical-device accessibility were not tested. Use the audit's actual evidence boundaries.
 
 ## Demo walkthrough
 

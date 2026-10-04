@@ -42,7 +42,7 @@ The pre-edit audit confirmed two critical findings (A01 incomplete ingestion; A0
 
 ### 2. Resolved defects
 
-A01–A17 are resolved in the implemented scope; A18–A21 are also resolved. PostgreSQL runtime verification is explicitly deferred, rather than included in the claim for A06.
+A01–A17 are resolved in the implemented scope; A18–A21 are also resolved. The PostgreSQL runtime follow-up on 2026-10-04 also verified the migration and cascade behavior for A06; see the executed evidence below.
 
 - Upload one CSV, retain its tracked local artifact, preview original strings, detect/correct mappings, validate actual source rows, inspect issues and import only valid rows transactionally. Status transitions are explicit; mapping edits reset validation; repeated import is idempotent. Preserve original post text and leading-zero external IDs. Reject ambiguous duplicate/empty CSV headers and unsupported binary input.
 - Optional invalid engagement becomes unavailable; genuine zero remains measurable. Duplicate text is retained and flagged. Reject zero-valid imports/empty analyses. Preserve source hashtags alongside extracted hashtags.
@@ -162,7 +162,7 @@ frontend/tsconfig.json
 - `004_topic_provenance`: nullable JSON raw model topic identity/keyword provenance.
 - `005_legacy_provenance`: marks old completed runs without current NER/topic provenance as unverified, preserving their original metadata/results.
 
-Existing migrations 001/002 were preserved. The regression upgrades from 002 with existing seeded data, verifies preservation/provenance and metadata drift, downgrades to base and re-upgrades. Production verification SQLite also upgraded through 005. PostgreSQL runtime has not been tested because the Docker daemon is unavailable.
+Existing migrations 001/002 were preserved. The regression upgrades from 002 with existing seeded data, verifies preservation/provenance and metadata drift, downgrades to base and re-upgrades. Production verification SQLite also upgraded through 005. The 2026-10-04 PostgreSQL follow-up applied 001–005, checked metadata drift, rolled back one revision and re-upgraded, then downgraded to base and re-upgraded on an empty temporary database.
 
 ### 8. Dependency changes
 
@@ -215,7 +215,7 @@ Preserved Space Grotesk, IBM Plex Sans, JetBrains Mono, light canvas, structural
 | Clean frontend npm ci | Passed, 335 packages |
 | Impeccable mechanical frontend audit | Zero findings in the bounded scan |
 | git diff --check | Passed |
-| PostgreSQL/Docker runtime | Deferred; daemon pipe unavailable |
+| PostgreSQL/Docker runtime | Passed in the 2026-10-04 follow-up below |
 
 Warnings are Starlette's httpx test-client deprecation and seeded UMAP's single-job notices. None are failing checks. Integration fixtures are injected only by tests; production routes/persistence are exercised. Earlier selector/CORS-origin test setup failures were corrected and the affected workflows rerun. A Windows preview file lock was resolved before the clean npm reinstall. Temporary approval/build timeout was retried successfully; no approval blocker remains.
 
@@ -225,7 +225,7 @@ Backend statement coverage: **92.559% (2,861 / 3,091 statements; 230 missing)**,
 
 ### 13. Fresh-install result
 
-Created a separate empty `.venv-verify` using Python 3.12.13, installed the generated hashed dependency lock and ran compatibility checks, static checks, tests, migrations and real inference from that environment. Installed the optional official spaCy model explicitly. Stopped the frontend preview, performed clean npm ci from the updated lock, then built and started the production frontend. This establishes the documented Windows/SQLite install path, without depending on undeclared developer-venv packages. Linux/macOS and PostgreSQL installs were not independently executed. Core model weights used existing local caches; first-use model download requires network access and is not a clean-cache download benchmark.
+Created a separate empty `.venv-verify` using Python 3.12.13, installed the generated hashed dependency lock and ran compatibility checks, static checks, tests, migrations and real inference from that environment. Installed the optional official spaCy model explicitly. Stopped the frontend preview, performed clean npm ci from the updated lock, then built and started the production frontend. This establishes the documented Windows/SQLite install path, without depending on undeclared developer-venv packages. Linux/macOS installs were not independently executed. PostgreSQL runtime was subsequently verified using this existing Windows environment on 2026-10-04; that follow-up was not another fresh dependency installation. Core model weights used existing local caches; first-use model download requires network access and is not a clean-cache download benchmark.
 
 ### 14. Full E2E result
 
@@ -237,13 +237,13 @@ Local screenshots and full raw responses are under ignored `.verification`; comp
 
 ### 15. Deferred / retained limitations
 
-- PostgreSQL runtime migration/cascade/install verification remains deferred because Docker's Linux-engine pipe is unavailable; SQLite is the executed path. This is not a claim that PostgreSQL testing passed.
+- PostgreSQL 16.14 runtime migrations, real-model workflows, isolation and cascade deletion passed on 2026-10-04. Rollbacks used an empty temporary database; populated production-data migration/rollback and a separate fresh PostgreSQL dependency installation were not tested.
 - One in-process worker / one server process; restart fails interrupted work for explicit retry. No durable queue or multi-process locking. Large datasets can consume substantial CPU/RAM; smoke is 90/900 posts, not a 50MB stress benchmark.
 - English short-text models, 128-token sentiment truncation, synthetic-template bias and imperfect names/entities. No external ground-truth quality benchmark.
 - Installed libraries did not expose the exact sentiment/embedding cache revision; metadata records null honestly. Package versions/parameters/NER version are recorded, but model downloads are not guaranteed immutable by model name alone.
 - Local single-user operation has no authentication. Raw CSV/text remains on this machine until deletion; deleting a dataset does not remove external copies/backups/model caches. File and database deletion cannot share one atomic transaction; a rare database commit failure after unlink would require restaging. Upload/import are transactionally guarded within the database.
 - Validation issue display is capped at 200; date ambiguity assumes the documented parser order, so ISO timestamps are preferable. Older uploads with missing stage files require explicit re-upload. Older demo data requires explicit delete/reload; no user data was silently regenerated.
-- Browser verification used installed Chrome; mobile QA is viewport-based, not physical-device testing. No frontend coverage percentage, formal accessibility certification, clean model-cache download test or PostgreSQL result is claimed.
+- Browser verification used installed Chrome; mobile QA is viewport-based, not physical-device testing. No frontend coverage percentage, formal accessibility certification or clean model-cache download test is claimed.
 
 ### 16. Git commits created
 
@@ -283,4 +283,75 @@ docs/PROJECT_REPORT_NOTES.md
 
 ### 17. Git status
 
-Handoff state: clean tracked working tree on `codex/hardening` after the documentation commit. The final `git status --porcelain` and `git diff --check` checks are performed after committing and confirmed in the handoff. No push/merge occurred. Local virtual environments, model caches, databases, uploads, verification screenshots/raw responses and test build output remain ignored. The project knowledge graph was refreshed for the current implementation (2,552 nodes / 6,477 edges; no repository artifact written).
+Original hardening handoff: clean tracked working tree on `codex/hardening` after the documentation commit. No push/merge occurred during that pass. Local virtual environments, model caches, databases, uploads, verification screenshots/raw responses and test build output remain ignored. The project knowledge graph was refreshed for the current implementation (2,552 nodes / 6,477 edges; no repository artifact written).
+
+## Final verification follow-up — 2026-10-04
+
+Started on a clean `codex/hardening` checkout at `1d71308970e3818f685478d3475fa56c58d24a67`. All existing hardening commits were present, with no uncommitted work and no whitespace errors. This pass made one targeted CSS correction and updated verification documentation; no architecture or NLP behavior changed.
+
+### PostgreSQL setup and migration evidence
+
+Started Docker Desktop and ran the repository's `docker compose up -d db`. The `social_trend_analyzer_db` container became healthy, and `pg_isready` accepted connections. Server version: PostgreSQL **16.14**, using `postgres:16-alpine`. An existing native PostgreSQL listener occupied host port 5432, so an ignored Compose override added `127.0.0.1:55432` to the same database service. The repository Compose file was unchanged.
+
+Backend `.env` remained ignored and continued to select SQLite. Verification used the Compose development connection settings with a temporary database: driver `postgresql+psycopg2`, host `127.0.0.1`, port `55432`, database `sta_verify_20261004`. The existing local SQLite database and the Compose `social_trend_analyzer` database were not modified.
+
+Executed from `backend` using `.venv-verify/Scripts/python.exe`:
+
+```text
+python -m alembic upgrade head
+python -m alembic current
+python -m alembic check
+python -m alembic downgrade -1
+python -m alembic upgrade head
+python -m alembic downgrade base
+python -m alembic upgrade head
+```
+
+All commands passed. The chain applied `001_initial`, `002_nlp_and_trends`, `003_staged_uploads`, `004_topic_provenance`, and `005_legacy_provenance`; current revision was head and metadata check reported no new upgrade operations. Both rollback exercises preceded data ingestion and affected only the empty disposable database.
+
+Verified all ten application tables: `datasets`, `posts`, `analysis_runs`, `sentiment_results`, `topics`, `post_topics`, `entities`, `post_entities`, `keyword_snapshots`, `trend_snapshots`. All **13** designed JSON columns were physically `jsonb`: datasets (`column_mapping`, `upload_metadata`, `validation_results`), posts (`hashtags`, `mentions`, `urls`, `preprocessing_meta`), analysis_runs (`config`, `model_info`, `stats`), topics (`keywords`, `representative_docs`, `model_metadata`).
+
+### Actual inference, isolation and deletion
+
+Ran one production FastAPI server on port 8002 against PostgreSQL and a separately built production Next.js preview on 3002. Models loaded from existing caches with offline mode enabled. No production inference or HTTP responses were mocked.
+
+A 90-post synthetic CSV completed upload → raw preview → mapping → validation → atomic/idempotent import → analysis twice. Original text, UTC timestamps, retained duplicates and NULL-versus-zero engagement were checked. Actual inference used CardiffNLP Twitter-RoBERTa and 384-dimensional MiniLM on CPU, BERTopic/UMAP/HDBSCAN/c-TF-IDF, and spaCy `en_core_web_sm` 3.8.0. Both runs completed without degradation; unavailable model revisions remained null.
+
+| Persisted results per 90-post run | Count |
+|---|---:|
+| Sentiment results | 90 |
+| Topics | 5 |
+| Post-topic assignments | 90 |
+| Entities / post-entity links | 19 / 56 |
+| Keyword/hashtag snapshots | 73 |
+| Daily trend snapshots | 105 |
+
+Runs: `92621ad1-0d1e-4b4e-8f2d-4ab3c2429f04` and `89d12cc4-185c-476b-aba8-ce4c07b7a5cd`; dataset: `f1129be4-48a9-4d85-a5d3-7222c93784f5`. Dashboard, timeline, topics/detail/history, entities, keywords, trends, Explorer and Analysis metadata were checked for each run. Hourly/daily/weekly and platform selectors passed. Pagination covered all 90 posts without duplicates; sentiment/topic filters and SQL join checks remained run-scoped. Wrong-dataset run and wrong-run topic requests were rejected. A simultaneous analysis submission returned 409. The Dashboard selector visibly switched to the second run and updated its URL.
+
+The existing browser upload-to-investigation E2E also passed against this production PostgreSQL setup: five source rows → four imported posts, one invalid timestamp, two retained duplicates → actual small-corpus inference → Dashboard → Trends & Topics → topic detail → Explorer → Analysis. It passed in 5.5s (6.7s suite).
+
+Deleted all three temporary datasets using production DELETE APIs, including the cross-dataset guard and browser upload. Each returned 204 and subsequent GET returned 404. Immediately before deletion, the database held 98 posts, three runs, 184 sentiments, 12 topics, 184 assignments, 38 entities, 112 entity links, 153 keyword snapshots and 214 trend snapshots. **All ten application tables had zero rows afterward**, all 16 foreign-key orphan checks returned zero, all three staged CSV files disappeared and the upload directory contained zero files. Raw runtime evidence is retained locally in ignored `.verification/final-postgres/report.json`, migration/workflow/delete logs, UI measurements and screenshots. The disposable harness's `/analysis` envelope assumption was corrected before its remaining read assertions; backend application code was unchanged. After verification, the API/UI/browser were stopped and only the empty temporary database was dropped. The Compose development database remained present and its container healthy.
+
+### Final automated checks and UI sanity
+
+| Executed check | Result in this pass |
+|---|---|
+| Ruff `app tests scripts` | Passed |
+| mypy `app --ignore-missing-imports` | Passed, 73 source files |
+| pytest `tests -v` | 91 passed, 3 dependency warnings, 90.80s |
+| pytest `--cov=app --cov-report=term-missing tests` | 91 passed, 3 dependency warnings, 73.76s |
+| Statement coverage | 2,861 / 3,091 = 92.559%; 230 missing; branch coverage disabled |
+| Frontend ESLint / TypeScript / production build | Passed, including after the CSS fix |
+| Frontend API tests | 4 passed, including after the CSS fix |
+| Fixture E2E | 1 passed, 1 opt-in real-model demo test skipped; 22.9s workflow |
+| Real-model PostgreSQL browser E2E | 1 passed; no model/HTTP fixtures |
+| Impeccable detector | Zero findings |
+| Repository hygiene / whitespace | Passed; no tracked local artifacts or likely secret patterns found |
+
+Windows sandbox restrictions initially blocked pytest temporary-directory access and Node child-process spawning; the same isolated checks passed on approved unrestricted retries. These were environment failures, not application defects. Existing locks/environments were used; this pass did not repeat fresh dependency installation or the 900-post real-model demo.
+
+Inspected Dashboard, Datasets, dataset detail/upload, Trends & Topics, topic detail, Explorer and Analysis at 1440×1000 and 390×844. No page-wide horizontal overflow, stuck loading state, visible error, unnamed main control, fake LIVE/Phase-1 language or browser exception was found. Keyboard Tab reached the skip link with a visible 2px focus outline; native table containers scrolled. Mobile navigation/tables intentionally scroll horizontally. Topic history remains lengthy on narrow screens; this is a retained density/usability limit, not a new redesign. This is viewport QA, not physical-device/touch testing or formal accessibility certification.
+
+The only code defect found was intrinsic file-input sizing that expanded the narrow upload form beyond its panel. Commit `fcbc480` (`fix: contain the CSV upload control on narrow screens`) adds one scoped `min-width: 0` label rule. After rebuilding, form scroll width equaled form width at both 390px (356px form) and 320px (286px form), and the real-model browser workflow passed. Generated preview directories are locally excluded; Next.js's temporary TypeScript include edits were removed.
+
+Changed documentation: `docs/CODEX_AUDIT.md`, `README.md`, `DATA_SCHEMA.md`, `docs/PROJECT_REPORT_NOTES.md`. The following documentation commit records these executed results. Push and PR outcomes are reported in the final handoff after committing; no merge is authorized or performed.

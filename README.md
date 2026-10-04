@@ -90,6 +90,8 @@ Remove-Item Env:E2E_REAL_NLP
 
 Unit/integration tests inject inference fixtures only from `backend/tests/model_fixtures.py`. The E2E starts the real FastAPI routes, migrations and database on port 8001 plus Next.js on 3001; it substitutes inference, not HTTP responses. It has its own `.next-e2e` output and `.verification/e2e.db`. The full-model smoke exercises a 90-row custom upload and the 900-post demo with real RoBERTa, MiniLM, BERTopic and spaCy. Do not confuse those evidence boundaries. [Audit, measured results and limitations](docs/CODEX_AUDIT.md) is the verification record.
 
+PostgreSQL 16.14 runtime verification passed on 2026-10-04: all five migrations, schema drift check, rollback/re-upgrade on an empty temporary database, two real-model 90-post runs, scoped investigation, production browser upload workflow and cascade/artifact deletion. Verification used the repository Compose service on an alternate local port because another PostgreSQL listener occupied 5432. Existing user databases were preserved. See the audit follow-up for connection details, counts and evidence boundaries; this does not establish populated production-data rollbacks or model accuracy.
+
 Regenerate the backend lock after changing `pyproject.toml`:
 
 ```powershell

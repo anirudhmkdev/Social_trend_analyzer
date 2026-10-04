@@ -194,4 +194,4 @@ Sentiment is unique per post/run. Topic indices are unique within their run. Pos
 
 Dataset statuses: uploaded, mapped, validated, imported, preprocessed. Analysis statuses: pending, running, completed, failed. Imported sources are immutable. In-process jobs cannot resume after server restart; old active rows become failed with retry guidance. Failed-run partial evidence is excluded from completed analytics.
 
-Fresh SQLite upgrade, metadata drift check, downgrade-to-base/re-upgrade and cascade regressions are automated. PostgreSQL runtime verification requires a running server and is reported separately in the audit.
+Fresh SQLite upgrade, metadata drift check, downgrade-to-base/re-upgrade and cascade regressions are automated. PostgreSQL 16.14 runtime verification passed on 2026-10-04: the full migration/rollback/re-upgrade chain on an empty temporary database, all 13 JSONB columns, real-model run isolation and deletion of every derived row/staged artifact. Executed evidence and its limits are recorded separately in `docs/CODEX_AUDIT.md`.
