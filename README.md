@@ -4,30 +4,83 @@ A local, CPU-based workbench for investigating trends in English social-media CS
 
 ## Quick start (Windows PowerShell)
 
-Requirements: Python 3.12, Node.js 20 or newer, and [uv](https://docs.astral.sh/uv/). SQLite is the default. PostgreSQL is optional; set `DATABASE_URL` before running migrations. Use one backend server process.
+Requirements: Python 3.12, Node.js 20 or newer (with npm), and [uv](https://docs.astral.sh/uv/). SQLite is the default, so Docker and PostgreSQL are not required for this setup. PostgreSQL is optional; set `DATABASE_URL` in `backend/.env` before running migrations. Use one backend server process.
+
+The commands below use the existing checkout at `C:\Users\Anirudh\Desktop\Projects\NLP`. If your project is elsewhere, replace that path with your repository folder. To obtain a new checkout instead:
 
 ```powershell
 git clone https://github.com/anirudhmkdev/Social_trend_analyzer.git
-cd Social_trend_analyzer/backend
+```
+
+### First-time setup: backend (terminal 1)
+
+Open PowerShell and run:
+
+```powershell
+Set-Location 'C:\Users\Anirudh\Desktop\Projects\NLP\backend'
 uv venv .venv --python 3.12
 uv pip sync --python .venv/Scripts/python.exe requirements.lock --index-strategy unsafe-best-match
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\.venv\Scripts\python.exe -m alembic upgrade head
 # Optional entity enrichment; omit to run with explicitly reported NER degradation:
 uv pip install --python .venv/Scripts/python.exe --no-deps https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-In another terminal:
+Leave this terminal running. The environment-copy command preserves an existing `.env`; check its `DATABASE_URL` if you previously configured PostgreSQL. For SQLite, the example value is `sqlite:///./social_trend_analyzer.db`. Run migrations and the API from the `backend` folder so the database and upload paths resolve consistently. Virtual-environment activation is not needed because the commands use its Python executable directly.
+
+### First-time setup: frontend (terminal 2)
+
+Open a second PowerShell terminal and run:
 
 ```powershell
-cd Social_trend_analyzer/frontend
+Set-Location 'C:\Users\Anirudh\Desktop\Projects\NLP\frontend'
 npm ci
-Copy-Item .env.local.example .env.local
+if (-not (Test-Path .env.local)) { Copy-Item .env.local.example .env.local }
 npm run dev
 ```
 
-Open [the workbench](http://localhost:3000), then Datasets → Add Dataset. The first analysis downloads CardiffNLP RoBERTa and MiniLM weights from Hugging Face into the local model cache. Network access is needed for this initial download; subsequent inference is local. Core model loading failure marks the analysis failed with a recovery message; no random vectors or heuristic sentiment substitute is used. Missing spaCy weights omit entities and mark the completed run as degraded. Install the optional model and restart before analyzing again. Do not commit caches, databases or uploaded files.
+Leave this terminal running too. `frontend/.env.local` should contain `NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1` for the backend command above. Restart the frontend after changing this value.
+
+| Local page | URL |
+|---|---|
+| Workbench | [http://localhost:3000](http://localhost:3000) |
+| Interactive API documentation | [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) |
+| API health | [http://127.0.0.1:8000/api/v1/health](http://127.0.0.1:8000/api/v1/health) |
+
+Open the workbench, then **Datasets → Add Dataset**. Upload a CSV, review the preview, confirm the field mapping, validate, import valid rows, then start analysis. Wait for the run to finish before inspecting its Dashboard, Trends & Topics or Explorer results. The [download links below](#download-external-test-datasets-kaggle) provide suitable external inputs.
+
+The first analysis downloads CardiffNLP RoBERTa and MiniLM weights from Hugging Face into the local model cache. Network access is needed for this initial download; subsequent inference is local. Core model loading failure marks the analysis failed with a recovery message; no random vectors or heuristic sentiment substitute is used. Missing spaCy weights omit entities and mark the completed run as degraded. Install the optional model and restart before analyzing again. Do not commit caches, databases or uploaded files.
+
+### Run again after setup
+
+For normal use, open two PowerShell terminals. Dependency installation and environment copying are first-time steps; repeat migrations after pulling changes that include new migrations.
+
+Terminal 1 — backend:
+
+```powershell
+Set-Location 'C:\Users\Anirudh\Desktop\Projects\NLP\backend'
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Terminal 2 — frontend:
+
+```powershell
+Set-Location 'C:\Users\Anirudh\Desktop\Projects\NLP\frontend'
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000). Stop each server with **Ctrl+C** when finished. Keep the backend running throughout analysis, with one process and without `--reload`; restarting it interrupts active jobs.
+
+### Common startup problems
+
+| Problem | What to check |
+|---|---|
+| `uv`, Python or `npm` is not found | Install the prerequisites and reopen PowerShell. The backend lock and verified setup target Python 3.12. |
+| Database connection error or missing tables | Check `backend/.env`, start PostgreSQL if selected, and run `.\.venv\Scripts\python.exe -m alembic upgrade head` from `backend`. |
+| Frontend cannot reach the API | Keep terminal 1 running and confirm `NEXT_PUBLIC_API_URL` above. Open the health URL to check the API separately. |
+| Port 8000 or 3000 is already occupied | Stop the previous project server. If changing ports, update the frontend API URL and backend `CORS_ORIGINS` to match the actual frontend origin. |
+| First analysis fails while loading models | Check internet access for the initial weight downloads, read the run's error message, and retry after fixing the reported cause. |
 
 Linux/macOS: use `.venv/bin/python` in place of `.venv/Scripts/python.exe`. The tested environment is Windows/Python 3.12; portability has not been independently exercised here. The lock includes the official CPU PyTorch index and hashes. `pyproject.toml` is the dependency source.
 
@@ -38,6 +91,26 @@ UTF-8 (including BOM) or Windows-1252 CSV, maximum 50 MB. Text and timestamp are
 Uploaded → Mapped → Validated → Imported → Preprocessed. Mapping edits reset validation. Validation examines the staged source; row details show the first 200 issues with zero-based indices excluding the header. Missing/short text and missing/invalid timestamps exclude rows. Repeated text remains imported and is flagged as duplicate, because recurrence over time can matter. Optional invalid engagement becomes unavailable (`NULL`), whereas a measured zero stays zero. Import with no valid rows is rejected. A repeated import returns the existing dataset without duplicating posts. Imported datasets are immutable; upload a corrected file as a new dataset.
 
 Staged filenames are server-generated UUIDs. Files remain local until dataset deletion, which also cascades posts, runs and derived results. Active analyses block deletion. The batch worker is an in-process background task, not a durable queue; server restart marks interrupted jobs failed and allows retry. Run exactly one server process, without reload during analysis.
+
+## Download external test datasets (Kaggle)
+
+These datasets contain real social-media text and timestamps. Start with the smaller airline file, then use Reddit for a larger external test. Listed CSV sizes fit the current 50 MB upload limit; this does not establish processing speed or successful full-file analysis.
+
+| Dataset and download page | CSV file and listed size | Required field mapping | Useful test |
+|---|---|---|---|
+| [Twitter US Airline Sentiment — Kaggle](https://www.kaggle.com/datasets/crowdflower/twitter-airline-sentiment) | `Tweets.csv`, approximately 3.42 MB | `text` → Text; `tweet_created` → Timestamp | Sentiment and complaint topics in English airline tweets from February 2015; includes human sentiment labels. |
+| [Reddit WallStreetBets Posts — Kaggle](https://www.kaggle.com/datasets/gpreda/reddit-wallstreetsbets-posts) | `reddit_wsb.csv`, approximately 43.73 MB | `title` → Text; `timestamp` → Timestamp | Topics and activity changes around the GameStop period; the publisher's preview spans September 2020–August 2021. |
+
+The airline CSV is also available from this [Hugging Face mirror](https://huggingface.co/datasets/osanseviero/twitter-airline-sentiment/blob/main/Tweets.csv): open the page and click **Download**. Reddit file details are available in the [publisher's input preview](https://www.kaggle.com/code/gpreda/memes-to-markets-wallstreetbets-reddit-nlp/input).
+
+1. Open a Kaggle dataset link and choose **Download**; sign in if prompted.
+2. Extract the ZIP and select the CSV named above. Upload the CSV, not the ZIP or any accompanying SQLite database.
+3. For an initial CPU test, prepare a sample of about 1,000 rows spread across dates, keeping the header, original text and original timestamps. Sampled counts are only evidence for that sample; use a contiguous time period when evaluating trend curves.
+4. In **Datasets → Add Dataset**, upload, map the columns in the table, validate, import and run analysis. Increase the sample only after the smaller run completes.
+
+For airline tweets, `tweet_id` can map to External ID and `name` to Author. Keep `airline_sentiment` separately for an external comparison; the import workflow does not automatically calculate accuracy from ground-truth labels. For Reddit, `id` can map to External ID and `comms_num` to Comments. Use `title` for the first test because many `body` values are missing; combining titles with available bodies requires preparing a text column. Leave Reddit `score` unmapped because net votes are not a count of likes. Preserve genuine timestamps; use ISO dates if converting a different dataset's ambiguous date format.
+
+These are external project test inputs, not proof that the pretrained models never encountered the public posts. Dataset licenses remain separate from this project's MIT license; consult the publisher's terms before redistributing data. Downloaded datasets and any prepared samples should stay outside Git.
 
 ## Investigation
 
