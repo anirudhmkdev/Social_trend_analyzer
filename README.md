@@ -21,6 +21,7 @@ Set-Location 'C:\Users\Anirudh\Desktop\Projects\NLP\backend'
 uv venv .venv --python 3.12
 uv pip sync --python .venv/Scripts/python.exe requirements.lock --index-strategy unsafe-best-match
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+# Required: update the database schema before starting the backend.
 .\.venv\Scripts\python.exe -m alembic upgrade head
 # Optional entity enrichment; omit to run with explicitly reported NER degradation:
 uv pip install --python .venv/Scripts/python.exe --no-deps https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
@@ -54,12 +55,13 @@ The first analysis downloads CardiffNLP RoBERTa and MiniLM weights from Hugging 
 
 ### Run again after setup
 
-For normal use, open two PowerShell terminals. Dependency installation and environment copying are first-time steps; repeat migrations after pulling changes that include new migrations.
+For normal use, open two PowerShell terminals. Dependency installation and environment copying are first-time steps. Run the migration command below before starting the backend, including after pulling updates. It brings the database schema up to the version expected by the code; when already current, it makes no changes. Starting Uvicorn alone does not apply migrations.
 
 Terminal 1 — backend:
 
 ```powershell
 Set-Location 'C:\Users\Anirudh\Desktop\Projects\NLP\backend'
+.\.venv\Scripts\python.exe -m alembic upgrade head
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -78,6 +80,7 @@ Visit [http://localhost:3000](http://localhost:3000). Stop each server with **Ct
 |---|---|
 | `uv`, Python or `npm` is not found | Install the prerequisites and reopen PowerShell. The backend lock and verified setup target Python 3.12. |
 | Database connection error or missing tables | Check `backend/.env`, start PostgreSQL if selected, and run `.\.venv\Scripts\python.exe -m alembic upgrade head` from `backend`. |
+| Header says API available, but dataset requests return HTTP 500 | The health check can succeed with an outdated database schema. Stop the backend, run `.\.venv\Scripts\python.exe -m alembic upgrade head` from `backend`, restart it, then refresh the browser. |
 | Frontend cannot reach the API | Keep terminal 1 running and confirm `NEXT_PUBLIC_API_URL` above. Open the health URL to check the API separately. |
 | Port 8000 or 3000 is already occupied | Stop the previous project server. If changing ports, update the frontend API URL and backend `CORS_ORIGINS` to match the actual frontend origin. |
 | First analysis fails while loading models | Check internet access for the initial weight downloads, read the run's error message, and retry after fixing the reported cause. |
